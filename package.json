@@ -1,0 +1,153 @@
+{
+	"name": "nga-mofish",
+	"displayName": "NGA-MoFish",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.52.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"nga"
+	],
+	"activationEvents": [
+		"onView:nga-custom",
+		"onCommand:nga-mofish.test"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "nga-mofish.test",
+				"title": "测试"
+			},
+			{
+				"command": "nga-mofish.copyLink",
+				"title": "复制链接"
+			},
+			{
+				"command": "nga-mofish.copyTitleLink",
+				"title": "复制标题和链接"
+			},
+			{
+				"command": "nga-mofish.viewInBrowser",
+				"title": "在浏览器中打开"
+			},
+			{
+				"command": "nga-mofish.login",
+				"title": "登录NGA",
+				"icon": "$(sign-in)"
+			},
+			{
+				"command": "nga-custom.refreshAll",
+				"title": "刷新",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "nga-custom.refreshNode",
+				"title": "刷新节点",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "nga-custom.addNode",
+				"title": "添加节点",
+				"icon": "$(add)"
+			},
+			{
+				"command": "nga-custom.removeNode",
+				"title": "删除节点"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "nga",
+					"title": "NGA",
+					"icon": "resources/nga.svg"
+				}
+			]
+		},
+		"views": {
+			"nga": [
+				{
+					"id": "nga-custom",
+					"name": "自定义"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "nga-mofish.login",
+					"when": "view == nga-custom",
+					"group": "navigation@0"
+				},
+				{
+					"command": "nga-custom.refreshAll",
+					"when": "view == nga-custom",
+					"group": "navigation@2"
+				},
+				{
+					"command": "nga-custom.addNode",
+					"when": "view == nga-custom",
+					"group": "navigation@3"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "nga-mofish.copyLink",
+					"when": "viewItem == item"
+				},
+				{
+					"command": "nga-mofish.copyTitleLink",
+					"when": "viewItem == item"
+				},
+				{
+					"command": "nga-mofish.viewInBrowser",
+					"when": "viewItem == item"
+				},
+				{
+					"command": "nga-custom.refreshNode",
+					"when": "view == nga-custom && viewItem == dir",
+					"group": "inline"
+				},
+				{
+					"command": "nga-custom.removeNode",
+					"when": "view == nga-custom && viewItem == dir"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.3",
+		"@types/iconv": "^2.1.16",
+		"@types/mocha": "^8.0.4",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.52.0",
+		"@typescript-eslint/eslint-plugin": "^4.9.0",
+		"@typescript-eslint/parser": "^4.9.0",
+		"eslint": "^7.15.0",
+		"glob": "^7.1.6",
+		"mocha": "^8.1.3",
+		"typescript": "^4.1.2",
+		"vscode-test": "^1.4.1"
+	},
+	"dependencies": {
+		"art-template": "^4.13.2",
+		"axios": "^0.21.1",
+		"cheerio": "^1.0.0-rc.5",
+		"encoding": "^0.1.13",
+		"iconv": "^3.0.0",
+		"iconv-lite": "^0.6.2"
+	}
+}
