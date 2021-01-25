@@ -91,14 +91,14 @@ export class NGA {
                     rep.floor = js.__R[j].lou;
                     rep.content = js.__R[j].content;
                     if (rep.content.startsWith('[quote]')) {
-                        rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g)[0];
-                        rep.quoteuid = rep.quote.match(/\[uid=(\d+?)\]/g)[0].replace(/\[uid=/g, '').replace(/\]/g, '')
-                        rep.quoteuname = rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)[0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '')
+                        rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g)![0];
+                        rep.quoteuid = rep.quote.match(/\[uid=(\d+?)\]/g)![0].replace(/\[uid=/g, '').replace(/\]/g, '')
+                        rep.quoteuname = rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '')
                         rep.quote = rep.quote.replace(/\[quote\].*?\[\/b\]/g, '').replace(/\[\/quote\]/g, '').replace('<br/><br/>', '').replace(/<br\/>/g, '\n')
                         rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '');
                     } else if (rep.content.startsWith('[b]')) {
-                        let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)[0]
-                        rep.quoteuname = rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)[0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '')
+                        let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)![0]
+                        rep.quoteuname = rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '')
                         for (let k=0; k < replies.length; k++) {
                             if (replies[k].userName == rep.quoteuname && replies[k].time == rdate) {
                                 rep.quote = replies[k].content;
