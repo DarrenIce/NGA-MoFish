@@ -7,6 +7,7 @@
 
 - 仓库地址：[github.com](https://github.com/DarrenIce/NGA-MoFish)
 - 插件地址：[marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemName=DarrenB.nga-mofish)
+- 更新日志：[CHANGELOG](https://github.com/DarrenIce/NGA-MoFish/blob/master/CHANGELOG.md)
 
 ---
 
