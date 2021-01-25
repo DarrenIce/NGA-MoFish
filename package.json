@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -63,6 +63,11 @@
 			{
 				"command": "nga-custom.removeNode",
 				"title": "删除节点"
+			},
+			{
+				"command": "nga-mofish.open",
+				"title": "打开指定帖子",
+				"icon": "$(new-file)"
 			}
 		],
 		"viewsContainers": {
@@ -92,10 +97,15 @@
 				{
 					"command": "nga-custom.refreshAll",
 					"when": "view == nga-custom",
-					"group": "navigation@2"
+					"group": "navigation@1"
 				},
 				{
 					"command": "nga-custom.addNode",
+					"when": "view == nga-custom",
+					"group": "navigation@2"
+				},
+				{
+					"command": "nga-mofish.open",
 					"when": "view == nga-custom",
 					"group": "navigation@3"
 				}

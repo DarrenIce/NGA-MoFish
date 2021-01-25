@@ -9,6 +9,7 @@ import addNode from './commands/addNode';
 import removeNode from './commands/removeNode';
 import { EOL } from 'os';
 import Global from './global'
+import {NGA} from './nga'
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -53,6 +54,18 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 公共事件：点击浏览帖子
 	let cDisposable5 = vscode.commands.registerCommand('nga-mofish.topicItemClick', (item: TreeNode) => topicItemClick(item));
+
+	let cDisposable6 = vscode.commands.registerCommand('nga-mofish.open', async () => {
+		let tid = await vscode.window.showInputBox({
+			placeHolder: 'tid',
+			prompt: '在此处输入帖子的tid，在Url可以看到哦！'
+		  });
+		  // 如果用户撤销输入，如ESC，则为undefined
+		  if (tid === undefined) {
+			return ;
+		  }
+		NGA.getTopicByTid(tid);
+	})
 
 	// 自定义视图事件：添加自定义节点
 	let cusDisposable1 = vscode.commands.registerCommand('nga-custom.addNode', async () => {
