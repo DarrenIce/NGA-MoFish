@@ -7,6 +7,7 @@ import * as path from 'path';
 import { report } from 'process';
 import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
+import {processSmile} from './process/smile';
 
 export class NGA {
 
@@ -58,7 +59,7 @@ export class NGA {
         // const $ = cheerio.load(res.data);
 
         const topic = new TopicDetail();
-        let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         let js = JSON.parse(j).data;
         console.log(js);
         topic.id = parseInt(js.__T.tid);
@@ -72,7 +73,8 @@ export class NGA {
         topic.authorID = js.__T.authorid;
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
-        topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
+        topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
+        topic.content = processSmile(topic.content);
         topic.replyCount = js.__T.replies;
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
@@ -100,7 +102,7 @@ export class NGA {
             for (let i = 1; i <= 1000; i++) {
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
                 console.log(j);
                 let js = JSON.parse(j).data;
                 if (js.__PAGE !== i) {
@@ -150,18 +152,24 @@ export class NGA {
                             }
                             rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, '');
                         } else if (js.__R[j].content.startsWith('[quote]')) {
-                            let rtpid = js.__R[j].content.match(/pid=\d+/g)![0].replace('pid=', '');
-                            if (pid2reply.has(rtpid)) {
-                                rep.quote = pid2reply.get(rtpid).content;
-                                rep.quoteuid = pid2reply.get(rtpid).uid;
-                                rep.quoteuname = pid2reply.get(rtpid).userName;
+                            if (js.__R[j].content.indexOf('[pid=') !== -1) {
+                                let rtpid = js.__R[j].content.match(/pid=\d+/g)![0].replace('pid=', '');
+                                if (pid2reply.has(rtpid)) {
+                                    rep.quote = pid2reply.get(rtpid).content;
+                                    rep.quoteuid = pid2reply.get(rtpid).uid;
+                                    rep.quoteuname = pid2reply.get(rtpid).userName;
+                                }
+                            } else if (js.__R[j].content.indexOf('[tid=') !== -1) {
+                                rep.quote = '引用主题';
                             }
+                            
                             rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, ''); 
                         }
                         // }
                         rep.likes = js.__R[j].score;
                         // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
                         rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
+                        rep.content = processSmile(rep.content);
                         pid2reply.set(rep.pid, rep);
                     }
 
