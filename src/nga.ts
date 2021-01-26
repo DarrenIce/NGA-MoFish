@@ -26,7 +26,7 @@ export class NGA {
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&page=1&lite=js`);
         const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&page=1&lite=js`, { responseType: 'arraybuffer' });
-        let j = res.data.replace('window.script_muti_get_var_store=','');
+        let j = res.data.replace('window.script_muti_get_var_store=', '');
         // console.log(j)
         let js = JSON.parse(j).data;
         // console.log(js)
@@ -45,7 +45,7 @@ export class NGA {
 
     static async getTopicByTid(tid: string) {
         const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
-        let j = res.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
         node.link = `https://bbs.nga.cn/read.php?lite=js&tid=${tid}`;
@@ -58,11 +58,11 @@ export class NGA {
         // const $ = cheerio.load(res.data);
 
         const topic = new TopicDetail();
-        let j = res.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         let js = JSON.parse(j).data;
         console.log(js);
         topic.id = parseInt(js.__T.tid);
-        topic.link = topicLink.replace('&lite=js','');
+        topic.link = topicLink.replace('&lite=js', '');
         topic.title = js.__T.subject;
         topic.node = {
             name: js.__R['0'].fid,
@@ -93,13 +93,14 @@ export class NGA {
                 topic.comments.push(com);
             }
         }
+        let pid2reply = new Map();
 
         const _getTopicReplies = async (link: string): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
-            for (let i=1; i<=1000; i++) {
+            for (let i = 1; i <= 1000; i++) {
                 console.log(topicLink + '&page=' + i);
-                const rs =await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                let j = rs.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
+                let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
                 console.log(j);
                 let js = JSON.parse(j).data;
                 if (js.__PAGE !== i) {
@@ -114,35 +115,56 @@ export class NGA {
                     u.regDate = js.__U[val]?.regdate;
                     users.set(val, u);
                 }
-                for (let j=1; j<js.__R__ROWS; j++) {
+                for (let j = 1; j < js.__R__ROWS; j++) {
                     let rep = new TopicReply();
+                    rep.pid = '' + js.__R[j].pid;
                     rep.uid = '' + js.__R[j].authorid;
                     rep.userName = users.has(rep.uid) ? users.get(rep.uid).userNmae : rep.uid;
                     rep.time = js.__R[j].postdate;
                     rep.floor = js.__R[j].lou;
-                    rep.content =  js.__R[j].hasOwnProperty('content') ? js.__R[j].content : js.__R[j].subject;
+                    rep.content = js.__R[j].hasOwnProperty('content') ? js.__R[j].content : js.__R[j].subject;
                     if (js.__R[j].hasOwnProperty('content')) {
-                        if (rep.content.startsWith('[quote]')) {
-                            rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g) ? rep.content.match(/\[quote\].*\[\/quote\]/g)![0] : rep.content.match(/\[quote\].*\[\/b\]/g)![0];
-                            rep.quoteuid = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=(\d+?)\]/g)![0].replace(/\[uid=/g, '').replace(/\]/g, '') : '-1';
-                            rep.quoteuname = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.quote.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
-                            rep.quote = rep.quote.replace(/\[quote\].*?\[\/b\]/g, '').replace(/\[\/quote\]/g, '').replace('<br/><br/>', '').replace(/<br\/>/g, '\n');
-                            rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '');
-                        } else if (rep.content.startsWith('[b]') && rep.content.indexOf('Post') !== -1) {
-                            let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)![0];
-                            rep.quoteuname = rep.content.indexOf('[uid]') === -1 ? rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.content.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
-                            for (let k=0; k < replies.length; k++) {
-                                if (replies[k].userName === rep.quoteuname && replies[k].time === rdate) {
-                                    rep.quote = replies[k].content;
-                                    rep.quoteuid = replies[k].uid;
-                                    break;
-                                }
+                        // if (rep.content.startsWith('[quote]')) {
+                        //     rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g) ? rep.content.match(/\[quote\].*\[\/quote\]/g)![0] : rep.content.match(/\[quote\].*\[\/b\]/g)![0];
+                        //     rep.quoteuid = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=(\d+?)\]/g)![0].replace(/\[uid=/g, '').replace(/\]/g, '') : '-1';
+                        //     rep.quoteuname = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.quote.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
+                        //     rep.quote = rep.quote.replace(/\[quote\].*?\[\/b\]/g, '').replace(/\[\/quote\]/g, '').replace('<br/><br/>', '').replace(/<br\/>/g, '\n');
+                        //     rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '');
+                        // } else if (rep.content.startsWith('[b]') && rep.content.indexOf('Post') !== -1) {
+                        //     let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)![0];
+                        //     rep.quoteuname = rep.content.indexOf('[uid]') === -1 ? rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.content.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
+                        //     for (let k=0; k < replies.length; k++) {
+                        //         if (replies[k].userName === rep.quoteuname && replies[k].time === rdate) {
+                        //             rep.quote = replies[k].content;
+                        //             rep.quoteuid = replies[k].uid;
+                        //             break;
+                        //         }
+                        //     }
+                        //     rep.content = rep.content.replace(/\[b\].*\[\/b\]/g, '');
+                        if (js.__R[j].hasOwnProperty('reply_to')) {
+                            let rtpid = '' + js.__R[j].reply_to;
+                            if (pid2reply.has(rtpid)) {
+                                rep.quote = pid2reply.get(rtpid).content;
+                                rep.quoteuid = pid2reply.get(rtpid).uid;
+                                rep.quoteuname = pid2reply.get(rtpid).userName;
                             }
-                            rep.content = rep.content.replace(/\[b\].*\[\/b\]/g, '');
+                            rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, '');
+                        } else if (js.__R[j].content.startsWith('[quote]')) {
+                            let rtpid = js.__R[j].content.match(/pid=\d+/g)![0].replace('pid=', '');
+                            if (pid2reply.has(rtpid)) {
+                                rep.quote = pid2reply.get(rtpid).content;
+                                rep.quoteuid = pid2reply.get(rtpid).uid;
+                                rep.quoteuname = pid2reply.get(rtpid).userName;
+                            }
+                            rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, ''); 
                         }
+                        // }
                         rep.likes = js.__R[j].score;
+                        // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
                         rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
+                        pid2reply.set(rep.pid, rep);
                     }
+
                     if (js.__R[j].hasOwnProperty('comment')) {
                         for (let c in js.__R[j].comment) {
                             let com = new Comment();
@@ -216,6 +238,7 @@ export class TopicDetail {
 }
 
 export class TopicReply {
+    public pid: string = '';
     public uid: string = '';
     // 用户名
     public userName: string = '';
