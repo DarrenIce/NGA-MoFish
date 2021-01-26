@@ -1,15 +1,15 @@
-import { ExtensionContext, Webview, Uri } from 'vscode'
-import { Node } from './nga'
+import { ExtensionContext, Webview, Uri } from 'vscode';
+import { Node } from './nga';
 let Iconv  = require('iconv').Iconv;
-import * as iconvlite from 'iconv-lite'
+import * as iconvlite from 'iconv-lite';
 
 export default class Global {
-    static context: ExtensionContext | undefined
+    static context: ExtensionContext | undefined;
 
     static gbk2utf8(src: string): any {
-        console.log(iconvlite.encodingExists('utf8'))
-        console.log(iconvlite.encodingExists('gbk'))
-        return iconvlite.decode(iconvlite.encode(src, 'gbk'), 'utf-8')
+        console.log(iconvlite.encodingExists('utf8'));
+        console.log(iconvlite.encodingExists('gbk'));
+        return iconvlite.decode(iconvlite.encode(src, 'gbk'), 'utf-8');
     }
 
     static getWebViewContextPath(webview: Webview): string {
@@ -17,11 +17,11 @@ export default class Global {
     }
 
     static async setCookie(cookie: string) {
-        await this.context?.globalState.update('cookie', cookie)
+        await this.context?.globalState.update('cookie', cookie);
     }
 
     static getCookie(): string | undefined {
-        return this.context?.globalState.get('cookie')
+        return this.context?.globalState.get('cookie');
     }
 
     static getCustomNodes(): Node[] {

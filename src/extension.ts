@@ -8,13 +8,13 @@ import CustomProvider from './providers/CustomProvider';
 import addNode from './commands/addNode';
 import removeNode from './commands/removeNode';
 import { EOL } from 'os';
-import Global from './global'
-import {NGA} from './nga'
+import Global from './global';
+import { NGA } from './nga';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	Global.context = context
+	Global.context = context;
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -30,11 +30,11 @@ export function activate(context: vscode.ExtensionContext) {
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 
-	let testDisposable = vscode.commands.registerCommand('nga-mofish.test', () => {
+	let testDisposable = vscode.commands.registerCommand('nga.test', () => {
 		console.log(Global.getCookie());
 	});
 
-	let cDisposable1 = vscode.commands.registerCommand('nga-mofish.login', async () => {
+	let cDisposable1 = vscode.commands.registerCommand('nga.login', async () => {
 		const loginResult = await login();
 		if (loginResult === LoginResult.success || loginResult === LoginResult.logout) {
 			vscode.window.showInformationMessage('Hello VS Code from NGA-MoFish!');
@@ -42,30 +42,30 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// 公共事件：复制链接
-	let cDisposable2 = vscode.commands.registerCommand('nga-mofish.copyLink', (item: TreeNode) => vscode.env.clipboard.writeText(item.link));
+	let cDisposable2 = vscode.commands.registerCommand('nga.copyLink', (item: TreeNode) => vscode.env.clipboard.writeText(item.link));
 
 	// 公共事件：复制标题和链接
-	let cDisposable3 = vscode.commands.registerCommand('nga-mofish.copyTitleLink', (item: TreeNode) =>
+	let cDisposable3 = vscode.commands.registerCommand('nga.copyTitleLink', (item: TreeNode) =>
 		vscode.env.clipboard.writeText(item.label + EOL + item.link)
 	);
 
 	// 公共事件：在浏览器中打开
-	let cDisposable4 = vscode.commands.registerCommand('nga-mofish.viewInBrowser', (item: TreeNode) => vscode.env.openExternal(vscode.Uri.parse(item.link)));
+	let cDisposable4 = vscode.commands.registerCommand('nga.viewInBrowser', (item: TreeNode) => vscode.env.openExternal(vscode.Uri.parse(item.link)));
 
 	// 公共事件：点击浏览帖子
-	let cDisposable5 = vscode.commands.registerCommand('nga-mofish.topicItemClick', (item: TreeNode) => topicItemClick(item));
+	let cDisposable5 = vscode.commands.registerCommand('nga.topicItemClick', (item: TreeNode) => topicItemClick(item));
 
-	let cDisposable6 = vscode.commands.registerCommand('nga-mofish.open', async () => {
+	let cDisposable6 = vscode.commands.registerCommand('nga.open', async () => {
 		let tid = await vscode.window.showInputBox({
 			placeHolder: 'tid',
 			prompt: '在此处输入帖子的tid，在Url可以看到哦！'
-		  });
-		  // 如果用户撤销输入，如ESC，则为undefined
-		  if (tid === undefined) {
-			return ;
-		  }
+		});
+		// 如果用户撤销输入，如ESC，则为undefined
+		if (tid === undefined) {
+			return;
+		}
 		NGA.getTopicByTid(tid);
-	})
+	});
 
 	// 自定义视图事件：添加自定义节点
 	let cusDisposable1 = vscode.commands.registerCommand('nga-custom.addNode', async () => {
@@ -92,12 +92,15 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable3,
 		cDisposable4,
 		cDisposable5,
+		cDisposable6,
 		cusDisposable1,
 		cusDisposable2,
 		cusDisposable3,
 		cusDisposable4
-		);
+	);
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {
+	Global.context = undefined;
+}

@@ -73,7 +73,7 @@ export default function topicItemClick(item: TreeNode) {
       //   }
       //   break;
       case 'login':
-        vscode.commands.executeCommand('nga-mofish.login');
+        vscode.commands.executeCommand('nga.login');
         break;
       case 'refresh':
         loadTopicInPanel(panel, item.link);
@@ -82,7 +82,7 @@ export default function topicItemClick(item: TreeNode) {
         break;
     }
   });
-  console.log(item.link)
+  console.log(item.link);
   loadTopicInPanel(panel, item.link);
 }
 

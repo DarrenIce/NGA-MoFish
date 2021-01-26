@@ -1,26 +1,26 @@
-import Global from './global'
-import http from './http'
-import * as cheerio from 'cheerio'
-import { AxiosResponse } from 'axios'
-import * as template from 'art-template'
-import * as path from 'path'
-import { report } from 'process'
-import { TreeNode } from './providers/BaseProvider'
-import topicItemClick from './commands/topicItemClick'
+import Global from './global';
+import http from './http';
+import * as cheerio from 'cheerio';
+import { AxiosResponse } from 'axios';
+import * as template from 'art-template';
+import * as path from 'path';
+import { report } from 'process';
+import { TreeNode } from './providers/BaseProvider';
+import topicItemClick from './commands/topicItemClick';
 
 export class NGA {
 
     static async checkCookie(cookie: string): Promise<boolean> {
         if (!cookie) {
-            return false
+            return false;
         }
         const res = await http.get('https://bbs.nga.cn/thread.php?fid=-7', {
             headers: {
                 Cookie: cookie
             },
             responseType: 'arraybuffer'
-        })
-        return res.request._redirectable._redirectCount <= 0
+        });
+        return res.request._redirectable._redirectCount <= 0;
     }
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
@@ -33,12 +33,12 @@ export class NGA {
         const list: Topic[] = [];
         for (let val in js.__T) {
             const topic = new Topic();
-            const t = js.__T[val]
+            const t = js.__T[val];
             // console.log(t)
-            topic.title = t.subject
-            topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js'
-            topic.node = node
-            list.push(topic)
+            topic.title = t.subject;
+            topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
+            topic.node = node;
+            list.push(topic);
         }
         return list;
     }
@@ -47,9 +47,9 @@ export class NGA {
         const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
         let j = res.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         let js = JSON.parse(j).data;
-        let node = new TreeNode(js.__T.subject, false)
-        node.link = `https://bbs.nga.cn/read.php?lite=js&tid=${tid}`
-        topicItemClick(node)
+        let node = new TreeNode(js.__T.subject, false);
+        node.link = `https://bbs.nga.cn/read.php?lite=js&tid=${tid}`;
+        topicItemClick(node);
     }
 
     static async getTopicDetail(topicLink: string): Promise<TopicDetail> {
@@ -58,9 +58,9 @@ export class NGA {
         // const $ = cheerio.load(res.data);
 
         const topic = new TopicDetail();
-        let j = res.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '')
-        let js = JSON.parse(j).data
-        console.log(js)
+        let j = res.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        let js = JSON.parse(j).data;
+        console.log(js);
         topic.id = parseInt(js.__T.tid);
         topic.link = topicLink.replace('&lite=js','');
         topic.title = js.__T.subject;
@@ -68,51 +68,51 @@ export class NGA {
             name: js.__R['0'].fid,
             title: js.__F.name || ''
         };
-        topic.authorName = js.__T.author
-        topic.authorID = js.__T.authorid
+        topic.authorName = js.__T.author;
+        topic.authorID = js.__T.authorid;
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
-        topic.content.replace('[b]', '<b>').replace('[/b]', '</b>')
+        topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
         topic.replyCount = js.__T.replies;
-        topic.likes = js.__R['0'].score
+        topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
-            let users = new Map()
+            let users = new Map();
             for (let val in js.__U) {
-                let u = new User()
-                u.uid = '' + js.__U[val]?.uid
-                u.userNmae = js.__U[val]?.username
-                u.regDate = js.__U[val]?.regdate
-                users.set(val, u)
+                let u = new User();
+                u.uid = '' + js.__U[val]?.uid;
+                u.userNmae = js.__U[val]?.username;
+                u.regDate = js.__U[val]?.regdate;
+                users.set(val, u);
             }
             for (let c in js.__R['0'].comment) {
-                let com = new Comment()
+                let com = new Comment();
                 com.authorID = js.__R['0'].comment[c].authorid;
                 com.authorName = users.has(com.authorID) ? users.get(com.authorID).userName : com.authorID;
                 com.content = js.__R['0'].comment[c].content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '');
                 com.time = js.__R['0'].comment[c].postdate;
-                topic.comments.push(com)
+                topic.comments.push(com);
             }
         }
 
         const _getTopicReplies = async (link: string): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
             for (let i=1; i<=1000; i++) {
-                console.log(topicLink + '&page=' + i)
+                console.log(topicLink + '&page=' + i);
                 const rs =await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                let j = rs.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '')
-                console.log(j)
-                let js = JSON.parse(j).data
-                if (js.__PAGE != i) {
+                let j = rs.data.replace('window.script_muti_get_var_store=','').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                console.log(j);
+                let js = JSON.parse(j).data;
+                if (js.__PAGE !== i) {
                     break;
                 }
 
-                let users = new Map()
+                let users = new Map();
                 for (let val in js.__U) {
-                    let u = new User()
-                    u.uid = '' + js.__U[val]?.uid
-                    u.userNmae = js.__U[val]?.username
-                    u.regDate = js.__U[val]?.regdate
-                    users.set(val, u)
+                    let u = new User();
+                    u.uid = '' + js.__U[val]?.uid;
+                    u.userNmae = js.__U[val]?.username;
+                    u.regDate = js.__U[val]?.regdate;
+                    users.set(val, u);
                 }
                 for (let j=1; j<js.__R__ROWS; j++) {
                     let rep = new TopicReply();
@@ -124,46 +124,46 @@ export class NGA {
                     if (js.__R[j].hasOwnProperty('content')) {
                         if (rep.content.startsWith('[quote]')) {
                             rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g) ? rep.content.match(/\[quote\].*\[\/quote\]/g)![0] : rep.content.match(/\[quote\].*\[\/b\]/g)![0];
-                            rep.quoteuid = rep.quote.indexOf('[uid]') == -1 ? rep.quote.match(/\[uid=(\d+?)\]/g)![0].replace(/\[uid=/g, '').replace(/\]/g, '') : '-1'
-                            rep.quoteuname = rep.quote.indexOf('[uid]') == -1 ? rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.quote.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '')
-                            rep.quote = rep.quote.replace(/\[quote\].*?\[\/b\]/g, '').replace(/\[\/quote\]/g, '').replace('<br/><br/>', '').replace(/<br\/>/g, '\n')
+                            rep.quoteuid = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=(\d+?)\]/g)![0].replace(/\[uid=/g, '').replace(/\]/g, '') : '-1';
+                            rep.quoteuname = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.quote.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
+                            rep.quote = rep.quote.replace(/\[quote\].*?\[\/b\]/g, '').replace(/\[\/quote\]/g, '').replace('<br/><br/>', '').replace(/<br\/>/g, '\n');
                             rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '');
-                        } else if (rep.content.startsWith('[b]') && rep.content.indexOf('Post') != -1) {
-                            let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)![0]
-                            rep.quoteuname = rep.content.indexOf('[uid]') == -1 ? rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.content.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '')
+                        } else if (rep.content.startsWith('[b]') && rep.content.indexOf('Post') !== -1) {
+                            let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)![0];
+                            rep.quoteuname = rep.content.indexOf('[uid]') === -1 ? rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.content.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
                             for (let k=0; k < replies.length; k++) {
-                                if (replies[k].userName == rep.quoteuname && replies[k].time == rdate) {
+                                if (replies[k].userName === rep.quoteuname && replies[k].time === rdate) {
                                     rep.quote = replies[k].content;
-                                    rep.quoteuid = replies[k].uid
-                                    break
+                                    rep.quoteuid = replies[k].uid;
+                                    break;
                                 }
                             }
                             rep.content = rep.content.replace(/\[b\].*\[\/b\]/g, '');
                         }
                         rep.likes = js.__R[j].score;
-                        rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>')
+                        rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
                     }
                     if (js.__R[j].hasOwnProperty('comment')) {
                         for (let c in js.__R[j].comment) {
-                            let com = new Comment()
+                            let com = new Comment();
                             com.authorID = js.__R[j].comment[c].authorid;
                             com.authorName = users.has(com.authorID) ? users.get(com.authorID).userName : com.authorID;
-                            com.content = js.__R[j].comment[c].content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '')
+                            com.content = js.__R[j].comment[c].content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '');
                             com.time = js.__R[j].comment[c].postdate;
-                            rep.comments.push(com)
-                            console.log(com)
+                            rep.comments.push(com);
+                            console.log(com);
                         }
                     }
 
-                    replies.push(rep)
+                    replies.push(rep);
                 }
             }
             return replies;
         };
 
-        topic.replies = await _getTopicReplies(topicLink)
+        topic.replies = await _getTopicReplies(topicLink);
         // console.log(topic.replies)
-        console.log(topic)
+        console.log(topic);
         return topic;
     }
 

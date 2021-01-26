@@ -1,4 +1,4 @@
-import {NGA} from './nga'
+import {NGA} from './nga';
 import * as vscode from 'vscode';
 import Global from './global';
 

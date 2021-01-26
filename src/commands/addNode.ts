@@ -1,9 +1,9 @@
 import { NGA } from './../nga';
 import * as vscode from 'vscode';
 import Global from '../global';
-import * as cheerio from 'cheerio'
-import http from '../http'
-import * as iconv from 'iconv-lite'
+import * as cheerio from 'cheerio';
+import http from '../http';
+import * as iconv from 'iconv-lite';
 
 /**
  * 添加节点逻辑
@@ -13,16 +13,16 @@ export default async function addNode(): Promise<boolean> {
   let fid = await vscode.window.showInputBox({
     placeHolder: 'NGA fid',
     prompt: '在此输入分区对应的fid，在url中可以看到，比如水区是-7'
-  })
-  if (fid == undefined) {
-    return false
+  });
+  if (fid === undefined) {
+    return false;
   }
   console.log('添加的分区fid', fid);
-  console.log(`https://bbs.nga.cn/thread.php?fid=${fid}`)
-  const r = await http.get(`https://bbs.nga.cn/thread.php?fid=${fid}`, { responseType: 'arraybuffer' })
-  const $ = cheerio.load(r.data)
-  const t = $('head title').text()
-  console.log('添加的分区title', t)
+  console.log(`https://bbs.nga.cn/thread.php?fid=${fid}`);
+  const r = await http.get(`https://bbs.nga.cn/thread.php?fid=${fid}`, { responseType: 'arraybuffer' });
+  const $ = cheerio.load(r.data);
+  const t = $('head title').text();
+  console.log('添加的分区title', t);
   const isAdd = Global.addCustomNode({
     name: fid,
     title: t
