@@ -20,7 +20,7 @@ export default class CustomProvider extends BaseProvider {
     const customNodes = Global.getCustomNodes();
     if (customNodes.length) {
       this.rootElements = customNodes.map<TreeNode>((n) => {
-        const treeNode = new TreeNode(n.title, true);
+        const treeNode = new TreeNode(n.title.replace(' NGA玩家社区', ''), true);
         treeNode.nodeName = n.name;
         return treeNode;
       });

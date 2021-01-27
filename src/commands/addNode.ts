@@ -21,7 +21,7 @@ export default async function addNode(): Promise<boolean> {
   console.log(`https://bbs.nga.cn/thread.php?fid=${fid}`);
   const r = await http.get(`https://bbs.nga.cn/thread.php?fid=${fid}`, { responseType: 'arraybuffer' });
   const $ = cheerio.load(r.data);
-  const t = $('head title').text();
+  const t = $('head title').text().replace(' NGA玩家社区', '');
   console.log('添加的分区title', t);
   const isAdd = Global.addCustomNode({
     name: fid,
