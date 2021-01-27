@@ -30,13 +30,20 @@ export class NGA {
         let j = res.data.replace('window.script_muti_get_var_store=', '');
         // console.log(j)
         let js = JSON.parse(j).data;
+
+        let fid2name = new Map();
+        for (let f in js.__F.sub_forums) {
+            fid2name.set(f, js.__F.sub_forums[f]['1']);
+        }
+        fid2name.set(node.name, node.title);
         // console.log(js)
         const list: Topic[] = [];
         for (let val in js.__T) {
             const topic = new Topic();
             const t = js.__T[val];
             // console.log(t)
-            topic.title = t.subject;
+            let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
+            topic.title = `[${sub}]` + t.subject;
             topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
             topic.node = node;
             list.push(topic);
