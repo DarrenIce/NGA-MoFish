@@ -131,7 +131,7 @@ export class NGA {
                     rep.userName = users.has(rep.uid) ? users.get(rep.uid).userNmae : rep.uid;
                     rep.time = js.__R[j].postdate;
                     rep.floor = js.__R[j].lou;
-                    rep.content = js.__R[j].hasOwnProperty('content') ? js.__R[j].content : js.__R[j].subject;
+                    rep.content = js.__R[j].hasOwnProperty('content') ? ""+js.__R[j].content : ""+js.__R[j].subject;
                     if (js.__R[j].hasOwnProperty('content')) {
                         // if (rep.content.startsWith('[quote]')) {
                         //     rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g) ? rep.content.match(/\[quote\].*\[\/quote\]/g)![0] : rep.content.match(/\[quote\].*\[\/b\]/g)![0];
@@ -150,6 +150,7 @@ export class NGA {
                         //         }
                         //     }
                         //     rep.content = rep.content.replace(/\[b\].*\[\/b\]/g, '');
+                        js.__R[j].content = ""+js.__R[j].content;
                         if (js.__R[j].hasOwnProperty('reply_to')) {
                             let rtpid = '' + js.__R[j].reply_to;
                             if (pid2reply.has(rtpid)) {
