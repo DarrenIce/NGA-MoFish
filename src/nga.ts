@@ -43,6 +43,7 @@ export class NGA {
             const t = js.__T[val];
             // console.log(t)
             let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
+            sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
             topic.title = `[${sub}]` + t.subject;
             topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
             topic.node = node;

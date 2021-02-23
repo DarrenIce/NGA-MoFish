@@ -1,14 +1,1 @@
-<svg width="23.999999999999996" height="23.999999999999996" xmlns="http://www.w3.org/2000/svg">
- <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
- <g>
-  <title>background</title>
-  <rect fill="#fff" id="canvas_background" height="26" width="26" y="-1" x="-1"/>
-  <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
-   <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%"/>
-  </g>
- </g>
- <g>
-  <title>Layer 1</title>
-  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="24" id="svg_1" y="20.417798" x="3.889777" stroke-width="0" stroke="#000" fill="#000000">N</text>
- </g>
-</svg>
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1614070108468" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1499" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M347.477333 248.490667l-28.672-63.488 51.882667-45.056h20.48L456.021333 68.266667 430.08 148.821333l-11.605333 91.477334-70.997334 8.192zM491.52 232.106667l138.581333-134.485334-75.093333 193.877334-63.488 8.874666v-68.266666z m109.226667 118.101333v-47.786667l144.042666-128.341333L669.013333 350.208h-66.901333z m90.112 40.96l71.68-69.632 71.68-44.373333-30.037334 73.728-51.2 79.872h-62.122666v-40.277334z m92.842666 61.44l49.834667-19.797333 53.248-51.882667-20.48 40.96v30.037333l-32.768 58.709334-49.834667-6.826667v-51.882667z m-473.088-150.186667l218.453334 79.872 121.514666 88.746667 113.322667 129.024 9.557333 40.277333-44.373333 51.2-46.421333 8.192-47.786667-18.432L441.002667 471.04 348.16 428.714667l-36.864 21.845333v149.504l-47.786667 40.277333-79.189333-28.672L136.533333 479.914667l28.672-97.621334 146.090667-79.872z m102.4 420.522667l47.786667-20.48 133.802667 66.901333 13.653333 116.053334-34.816 50.517333-49.834667 36.864-86.016-36.864-44.373333-109.226667 19.797333-103.765333z" fill="" p-id="1500"></path></svg>
