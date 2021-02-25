@@ -42,6 +42,9 @@ export class NGA {
             const topic = new Topic();
             const t = js.__T[val];
             // console.log(t)
+            if (t.fid != node.name) {
+                continue
+            }
             let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
             sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
             topic.title = `[${sub}]` + t.subject;
