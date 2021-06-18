@@ -8,6 +8,7 @@ import { report } from 'process';
 import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
 import {processSmile} from './process/smile';
+import { readlink } from 'fs';
 
 export class NGA {
 
@@ -25,33 +26,51 @@ export class NGA {
     }
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
-        console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&page=1&lite=js`);
-        const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&page=1&lite=js`, { responseType: 'arraybuffer' });
-        let j = res.data.replace('window.script_muti_get_var_store=', '');
-        // console.log(j)
-        let js = JSON.parse(j).data;
-
-        let fid2name = new Map();
-        for (let f in js.__F.sub_forums) {
-            fid2name.set(f, js.__F.sub_forums[f]['1']);
-        }
-        fid2name.set(node.name, node.title);
-        // console.log(js)
+        let maxnum = Global.getPostNum();
+        console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js`);
         const list: Topic[] = [];
-        for (let val in js.__T) {
-            const topic = new Topic();
-            const t = js.__T[val];
-            // console.log(t)
-            if (t.fid != node.name) {
-                continue
+        let nownum = 0;
+        for (let i=1; i <=10; i++) {
+            const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&page=${i}`, { responseType: 'arraybuffer' });
+            let j = res.data.replace('window.script_muti_get_var_store=', '');
+            // console.log(j)
+            try {
+                let js = JSON.parse(j).data;
+                let fid2name = new Map();
+                for (let f in js.__F.sub_forums) {
+                    fid2name.set(f, js.__F.sub_forums[f]['1']);
+                }
+                fid2name.set(node.name, node.title);
+                // console.log(js)
+                
+                for (let val in js.__T) {
+                    const topic = new Topic();
+                    const t = js.__T[val];
+                    // console.log(t)
+                    if (t.fid != node.name) {
+                        continue;
+                    }
+                    let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
+                    sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
+                    topic.title = `[${sub}]` + t.subject;
+                    let tid = parseInt(t.tid);
+                    let readList = Global.getReadList();
+                    if (readList.indexOf(tid) !== -1) {
+                        topic.title = `(已读)` + topic.title;
+                    }
+                    topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
+                    topic.node = node;
+                    list.push(topic);
+                    nownum = nownum + 1;
+                    if (nownum >= maxnum) {
+                        return list;
+                    }
+                }
+            } catch {
+                continue;
             }
-            let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
-            sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
-            topic.title = `[${sub}]` + t.subject;
-            topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
-            topic.node = node;
-            list.push(topic);
         }
+        
         return list;
     }
 
@@ -74,6 +93,7 @@ export class NGA {
         let js = JSON.parse(j).data;
         console.log(js);
         topic.id = parseInt(js.__T.tid);
+        Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
         topic.title = js.__T.subject;
         topic.node = {
@@ -85,7 +105,9 @@ export class NGA {
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
         topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-        topic.content = processSmile(topic.content);
+        if (Global.context?.globalState.get('showSticker')) {
+            topic.content = processSmile(topic.content);
+        }
         topic.replyCount = js.__T.replies;
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
@@ -181,7 +203,9 @@ export class NGA {
                         rep.likes = js.__R[j].score;
                         // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
                         rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-                        rep.content = processSmile(rep.content);
+                        if (Global.context?.globalState.get('showSticker')) {
+                            rep.content = processSmile(rep.content);
+                        }
                         pid2reply.set(rep.pid, rep);
                     }
 

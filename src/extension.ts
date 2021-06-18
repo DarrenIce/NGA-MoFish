@@ -85,6 +85,34 @@ export function activate(context: vscode.ExtensionContext) {
 		customProvider.refreshNodeList();
 	});
 
+	// 公共事件：是否显示AC娘表情
+	let cDisposable7 = vscode.commands.registerCommand('nga.showSticker', async() => {
+		let bool = await vscode.window.showInputBox({
+			placeHolder: 'true',
+			prompt: '输入true或者false(注意大小写)',
+			value: Global.context?.globalState.get('showSticker')
+		});
+		if (bool === 'false') {
+			Global.context?.globalState.update('showSticker', false);
+		} else if (bool === 'true') {
+			Global.context?.globalState.update('showSticker', true);
+		}
+	});
+
+	// 公共事件：帖子显示数量
+	let cDisposable8 = vscode.commands.registerCommand('nga.setPostNum', async() => {
+		let snum = await vscode.window.showInputBox({
+			placeHolder: '30',
+			prompt: '输入帖子显示的数量',
+			value: Global.getPostNum().toString()
+		});
+		if (!snum) {
+			snum = '';
+		}
+		let num = parseInt(snum);
+		Global.setPostNum(num);
+	});
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -96,7 +124,9 @@ export function activate(context: vscode.ExtensionContext) {
 		cusDisposable1,
 		cusDisposable2,
 		cusDisposable3,
-		cusDisposable4
+		cusDisposable4,
+		cDisposable7,
+		cDisposable8,
 	);
 }
 

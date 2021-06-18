@@ -51,4 +51,33 @@ export default class Global {
         }
         this.setCustomNodes(nodes);
     }
+
+    static getReadList(): number[] {
+        return this.context?.globalState.get<number[]>('readList') || [];
+    }
+
+    static setReadList(newList: number[]) {
+        this.context?.globalState.update('readList', newList);
+    }
+
+    static addReadTid(tid: number): boolean {
+        const list = this.getReadList();
+        if (list.indexOf(tid) !== -1) {
+            return false;
+        }
+        if (list.length === 100) {
+            list.pop();
+        }
+        list.push(tid);
+        this.setReadList(list);
+        return true;
+    }
+
+    static getPostNum(): number {
+        return this.context?.globalState.get<number>('postNum') || 25;
+    }
+
+    static setPostNum(num: number) {
+        this.context?.globalState.update('postNum', num);
+    }
 }

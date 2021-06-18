@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.2.5",
+	"version": "1.3.0",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -69,6 +69,16 @@
 			{
 				"command": "nga-custom.removeNode",
 				"title": "删除节点"
+			},
+			{
+				"command": "nga.showSticker",
+				"title": "是否显示AC娘表情",
+				"icon": "$(eye)"
+			},
+			{
+				"command": "nga.setPostNum",
+				"title": "显示的帖子数量",
+				"icon": "$(output)"
 			}
 		],
 		"viewsContainers": {
@@ -109,6 +119,16 @@
 					"command": "nga.open",
 					"when": "view == nga-custom",
 					"group": "navigation@3"
+				},
+				{
+					"command": "nga.showSticker",
+					"when": "view == nga-custom",
+					"group": "navigation@4"
+				},
+				{
+					"command": "nga.setPostNum",
+					"when": "view == nga-custom",
+					"group": "navigation@5"
 				}
 			],
 			"view/item/context": [
