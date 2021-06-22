@@ -65,10 +65,10 @@ export default class Global {
         if (list.indexOf(tid) !== -1) {
             return false;
         }
-        if (list.length === 100) {
+        if (list.length === 500) {
             list.pop();
         }
-        list.push(tid);
+        list.unshift(tid);
         this.setReadList(list);
         return true;
     }
