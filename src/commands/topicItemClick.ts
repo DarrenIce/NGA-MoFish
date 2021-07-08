@@ -100,12 +100,21 @@ function loadTopicInPanel(panel: vscode.WebviewPanel, topicLink: string) {
   NGA.getTopicDetail(topicLink)
     .then((detail) => {
       // try {
-        // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
+      // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
+      if (Global.context?.globalState.get('showSticker')) {
+        panel.webview.html = NGA.renderPage('topic-spic.html', {
+          topic: detail,
+          // topicYml: yaml.safeDump(detail),
+          contextPath: Global.getWebViewContextPath(panel.webview)
+        });
+      } else {
         panel.webview.html = NGA.renderPage('topic.html', {
           topic: detail,
           // topicYml: yaml.safeDump(detail),
           contextPath: Global.getWebViewContextPath(panel.webview)
         });
+      }
+
       // } catch (err) {
       //   console.log(err);
       // }

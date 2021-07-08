@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ topic.title }}</title>
+  <base href="https://bbs.nga.cn" />
+  <link rel="stylesheet" href="{{ contextPath }}/html/common.css" />
+  <link rel="stylesheet" href="{{ contextPath }}/html/topic-spic.css" />
+</head>
+
+<body>
+  <div class="container">
+    <!-- 标题 -->
+    <div class="topic-header">
+      <h1><a href="/read.php?tid={{ topic.id }}">{{ topic.title }}</a></h1>
+      <!-- <img src="{{authorAvatar}}" alt="avatar" /> -->
+    </div>
+
+    <!-- 作者、时间 -->
+    <div class="topic-meta">
+      <a class="node" href="/thread.php?fid={{ topic.node.name }}">{{ topic.node.title }}</a>
+      <a class="user text-bold" href="/nuke.php?func=ucp&uid={{ topic.authorID }}">{{ topic.authorName }}</a>
+      <span class="time"> {{ topic.displayTime }} </span>
+    </div>
+    <hr />
+
+    <!-- 正文 -->
+    {{if topic.content}}
+    <div class="topic-content">{{@ topic.content}}</div>
+    {{else}}
+    <div class="topic-content">正文无内容</div>
+    {{/if}}
+
+    {{ if topic.comments.length }}
+    <hr />
+    <p>贴条</p>
+    <div class="comments">
+      {{ each topic.comments }}
+      <div class="comments-detail">
+        {{$value.authorName}}：{{@ $value.content}}
+      </div>
+      <br />
+      {{ /each }}
+    </div>
+    {{ /if }}
+
+
+    <div class="topic-toolbar">
+      <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh');" title="刷新页面">刷新页面</a>
+      <span class="text count">
+        {{topic.likes}} 👍
+      </span>
+    </div>
+
+    <hr />
+
+    <!-- 评论 -->
+    <div class="reply">
+      {{if topic.replies.length}}
+      <h2>共 {{ topic.replyCount }} 条回复</h2>
+      {{else}}
+      <h2>暂无回复</h2>
+      {{/if}}
+
+      <!-- 列表 -->
+      {{each topic.replies}}
+      <div class="reply-item">
+        <!-- <img class="avatar" src="{{$value.userAvatar}}" alt="" /> -->
+        <div class="reply-item-wrap">
+          <div class="meta">
+            <a class="user {{ topic.authorName === $value.userName ? 'user--author' : '' }}"
+              href="/nuke.php?func=ucp&uid={{ $value.uid }}">{{ $value.userName }}</a>
+            <span class="time">{{ $value.time }}</span>
+            <span class="thanks">👍 {{ $value.likes }}</span>
+            <span class="floor">{{ $value.floor }}</span>
+          </div>
+          {{ if $value.quote }}
+          <div class="quote-url">
+            <a href="/nuke.php?func=ucp&uid={{ $value.quoteuid }}">{{ $value.quoteuname }}</a>
+          </div>
+          <blockquote>
+            {{@ $value.quote }}
+          </blockquote>
+          {{ /if }}
+          <div class="topic-content">{{@ $value.content}}</div>
+          {{ if $value.comments.length }}
+          <hr />
+          <p>贴条</p>
+          <div class="comments">
+            {{ each $value.comments }}
+            <div class="comments-detail">
+              {{ $value.authorName }}：{{@ $value.content }}
+            </div>
+            {{ /each }}
+          </div>
+          {{ /if }}
+        </div>
+      </div>
+      <hr />
+      {{/each}}
+    </div>
+
+  </div>
+
+  <script src="{{ contextPath }}/html/lib/js-yaml.min.js"></script>
+  <script>
+    var __topic = topic;
+  </script>
+  <script src="{{ contextPath }}/html/topic-spic.js"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+</body>
+
+</html>

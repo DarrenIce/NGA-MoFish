@@ -107,9 +107,7 @@ export class NGA {
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
         topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-        if (Global.context?.globalState.get('showSticker')) {
-            topic.content = processSmile(topic.content);
-        }
+        topic.content = processSmile(topic.content)
         topic.replyCount = js.__T.replies;
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
@@ -205,9 +203,7 @@ export class NGA {
                         rep.likes = js.__R[j].score;
                         // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
                         rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-                        if (Global.context?.globalState.get('showSticker')) {
-                            rep.content = processSmile(rep.content);
-                        }
+                        rep.content = processSmile(rep.content);
                         pid2reply.set(rep.pid, rep);
                     }
 

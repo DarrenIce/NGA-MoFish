@@ -85,7 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
 		customProvider.refreshNodeList();
 	});
 
-	// 公共事件：是否显示AC娘表情
+	// 公共事件：是否开启小图模式
 	let cDisposable7 = vscode.commands.registerCommand('nga.showSticker', async() => {
 		let bool = await vscode.window.showInputBox({
 			placeHolder: 'true',

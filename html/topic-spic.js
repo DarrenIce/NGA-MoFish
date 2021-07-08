@@ -15,10 +15,10 @@ vsPostMessage('setTitle', {
 
 // 给图片添加查看图片的功能
 document.querySelectorAll('img').forEach((img) => {
-  img.onload = () => {
-    if (img.width < 100 && img.height < 100) {
-      return;
-    }
+  // img.onload = () => {
+    // if (img.width < 40 && img.height < 49) {
+    //   return;
+    // }
     img.style.cursor = 'zoom-in';
     img.onclick = () => {
       console.log(img.src);
@@ -26,7 +26,7 @@ document.querySelectorAll('img').forEach((img) => {
         src: img.src
       });
     };
-  };
+  // };
 });
 
 // 图片地址的a标签，点击打开图片
