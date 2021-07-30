@@ -102,8 +102,10 @@ export class NGA {
             name: js.__R['0'].fid,
             title: js.__F.name || ''
         };
-        topic.authorName = js.__T.author;
-        topic.authorID = js.__T.authorid;
+        // topic.authorName = js.__T.author;
+        // topic.authorID = js.__T.authorid;
+        topic.authorID = js.__R['0'].authorid;
+        topic.authorName = js.__U[topic.authorID].username;
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
         topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
