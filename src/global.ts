@@ -1,6 +1,5 @@
 import { ExtensionContext, Webview, Uri } from 'vscode';
 import { Node } from './nga';
-let Iconv  = require('iconv').Iconv;
 import * as iconvlite from 'iconv-lite';
 
 export default class Global {
