@@ -78,12 +78,81 @@ export default function topicItemClick(item: TreeNode) {
       case 'refresh':
         loadTopicInPanel(panel, item.link);
         break;
+      case 'OnlyAuthor':
+        loadOnlyAuthor(panel,item.link);
+        break;
       default:
         break;
     }
   });
   console.log(item.link);
   loadTopicInPanel(panel, item.link);
+}
+
+/**
+ * 在Panel中加载只看楼主
+ * @param panel panel
+ * @param topicLink 话题链接
+ */
+function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
+  panel.webview.html = NGA.renderPage('loading.html', {
+    contextPath: Global.getWebViewContextPath(panel.webview)
+  });
+
+  // 获取详情数据
+  NGA.getTopicDetail(topicLink)
+    .then((detail) => {
+      // try {
+      // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
+      var onlyAuthorArr:TopicReply[] = [];
+      detail.replies.forEach(reply => {
+          if(reply.userName=detail.authorName){
+            onlyAuthorArr.push(reply);
+          }
+      });
+      detail.replies = onlyAuthorArr;
+      if (Global.context?.globalState.get('showSticker')) {
+
+        panel.webview.html = NGA.renderPage('topic-spic.html', {
+          topic: detail,
+          // topicYml: yaml.safeDump(detail),
+          contextPath: Global.getWebViewContextPath(panel.webview)
+        });
+      } else {
+        panel.webview.html = NGA.renderPage('topic.html', {
+          topic: detail,
+          // topicYml: yaml.safeDump(detail),
+          contextPath: Global.getWebViewContextPath(panel.webview)
+        });
+      }
+
+      // } catch (err) {
+      //   console.log(err);
+      // }
+    })
+    .catch((err: Error) => {
+      console.error(err);
+      if (err instanceof LoginRequiredError) {
+        panel.webview.html = NGA.renderPage('error.html', {
+          contextPath: Global.getWebViewContextPath(panel.webview),
+          message: err.message,
+          showLogin: true,
+          showRefresh: true
+        });
+      } else if (err instanceof AccountRestrictedError) {
+        panel.webview.html = NGA.renderPage('error.html', {
+          contextPath: Global.getWebViewContextPath(panel.webview),
+          message: err.message,
+          showRefresh: false
+        });
+      } else {
+        panel.webview.html = NGA.renderPage('error.html', {
+          contextPath: Global.getWebViewContextPath(panel.webview),
+          message: err.message,
+          showRefresh: true
+        });
+      }
+    });
 }
 
 /**
