@@ -85,6 +85,10 @@ blockquote p {
   opacity: 0.5;
 }
 
+.topic-meta .refresh {
+  margin-left: 10px;
+}
+
 .topic-content {
   line-height: 1.5;
   word-break: break-all;

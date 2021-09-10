@@ -1,4 +1,4 @@
-import { TopicDetail } from './../nga';
+import { TopicDetail, TopicReply } from './../nga';
 import { TreeNode } from '../providers/BaseProvider';
 import { LoginRequiredError, AccountRestrictedError } from './../error';
 import { NGA } from '../nga';
@@ -104,9 +104,9 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
     .then((detail) => {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
-      var onlyAuthorArr:TopicReply[] = [];
+      var onlyAuthorArr: TopicReply[] = [];
       detail.replies.forEach(reply => {
-          if(reply.userName=detail.authorName){
+          if(reply.userName == detail.authorName){
             onlyAuthorArr.push(reply);
           }
       });
