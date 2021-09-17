@@ -56,7 +56,7 @@ export default class Global {
     }
 
     static setReadList(newList: number[]) {
-        this.context?.globalState.update('readList', newList);
+        this.context?.globalState.update('readList', Array.from(new Set(newList)));
     }
 
     static addReadTid(tid: number): boolean {
