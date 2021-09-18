@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.3.7",
+	"version": "1.3.8",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -79,6 +79,11 @@
 				"command": "nga.setPostNum",
 				"title": "显示的帖子数量",
 				"icon": "$(output)"
+			},
+			{
+				"command": "nga.filterRead",
+				"title": "过滤已读帖子",
+				"icon": "$(filter)"
 			}
 		],
 		"viewsContainers": {
@@ -129,6 +134,11 @@
 					"command": "nga.setPostNum",
 					"when": "view == nga-custom",
 					"group": "navigation@5"
+				},
+				{
+					"command": "nga.filterRead",
+					"when": "view == nga-custom",
+					"group": "navigation@6"
 				}
 			],
 			"view/item/context": [

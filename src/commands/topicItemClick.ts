@@ -78,8 +78,11 @@ export default function topicItemClick(item: TreeNode) {
       case 'refresh':
         loadTopicInPanel(panel, item.link);
         break;
-      case 'OnlyAuthor':
+      case 'onlyAuthor':
         loadOnlyAuthor(panel,item.link);
+        break;
+      case 'cancelOnlyAuthor':
+        loadTopicInPanel(panel, item.link);
         break;
       default:
         break;

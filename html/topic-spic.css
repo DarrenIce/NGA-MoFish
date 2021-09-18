@@ -85,6 +85,14 @@ blockquote p {
   opacity: 0.5;
 }
 
+.topic-meta .onlyAuthor {
+  margin-left: 10px;
+}
+
+.topic-meta .hidden {
+  display: none;
+}
+
 .topic-content {
   line-height: 1.5;
   word-break: break-all;
@@ -99,17 +107,15 @@ blockquote p {
   word-break: break-all;
 }
 
-.topic-content img {
-  /* max-width: 100% !important; */
+/* .topic-content img {
   max-width: 50px;
   max-height: 50px;
 }
 
 blockquote img {
-  /* max-width: 100% !important; */
   max-width: 50px;
   max-height: 50px;
-}
+} */
 
 .topic-content pre {
   font-family: inherit;

@@ -56,7 +56,11 @@ export class NGA {
                     let tid = parseInt(t.tid);
                     let readList = Global.getReadList();
                     if (readList.indexOf(tid) !== -1) {
-                        topic.title = `(已读)` + topic.title;
+                        if (Global.context?.globalState.get('filterRead')) {
+                            continue;
+                        } else {
+                            topic.title = `(已读)` + topic.title;
+                        }
                     }
                     topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
                     topic.node = node;
@@ -77,7 +81,7 @@ export class NGA {
     static async getTopicByTid(tid: string) {
         const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
         let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-        console.log(j);
+        // console.log(j);
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
         node.link = `https://bbs.nga.cn/read.php?lite=js&tid=${tid}`;
@@ -91,9 +95,9 @@ export class NGA {
 
         const topic = new TopicDetail();
         let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-        console.log(j);
+        // console.log(j);
         let js = JSON.parse(j).data;
-        console.log(js);
+        // console.log(js);
         topic.id = parseInt(js.__T.tid);
         Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
@@ -138,7 +142,7 @@ export class NGA {
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
                 let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-                console.log(j);
+                // console.log(j);
                 let js = JSON.parse(j).data;
                 if (js.__PAGE !== i) {
                     break;
@@ -217,7 +221,7 @@ export class NGA {
                             com.content = js.__R[j].comment[c].content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '');
                             com.time = js.__R[j].comment[c].postdate;
                             rep.comments.push(com);
-                            console.log(com);
+                            // console.log(com);
                         }
                     }
 
@@ -229,7 +233,7 @@ export class NGA {
 
         topic.replies = await _getTopicReplies(topicLink);
         // console.log(topic.replies)
-        console.log(topic);
+        // console.log(topic);
         return topic;
     }
 

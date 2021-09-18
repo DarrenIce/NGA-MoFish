@@ -52,25 +52,25 @@ supportImageTypes.forEach((type) => {
  * 1. 完整地址：https://www.v2ex.com/t/123456，域名也可能是v2ex.com
  * 2. 相对地址：/t/123456
  */
-document.querySelectorAll('.topic-content a[href*="/t/"]').forEach((a) => {
-  // 取帖子链接
-  let href = '';
-  if (/(\/t\/\d+)/.test(a.href)) {
-    href = 'https://www.v2ex.com' + RegExp.$1;
-  } else {
-    return;
-  }
+// document.querySelectorAll('.topic-content a[href*="/t/"]').forEach((a) => {
+//   // 取帖子链接
+//   let href = '';
+//   if (/(\/t\/\d+)/.test(a.href)) {
+//     href = 'https://www.v2ex.com' + RegExp.$1;
+//   } else {
+//     return;
+//   }
 
-  a.dataset['href'] = href;
-  a.href = 'javascript:;';
-  a.onclick = () => {
-    console.log(a.dataset['href']);
-    vsPostMessage('openTopic', {
-      link: a.dataset['href']
-    });
-    return false;
-  };
-});
+//   a.dataset['href'] = href;
+//   a.href = 'javascript:;';
+//   a.onclick = () => {
+//     console.log(a.dataset['href']);
+//     vsPostMessage('openTopic', {
+//       link: a.dataset['href']
+//     });
+//     return false;
+//   };
+// });
 
 // 评论
 function onSubmit() {

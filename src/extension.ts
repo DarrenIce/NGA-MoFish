@@ -113,6 +113,20 @@ export function activate(context: vscode.ExtensionContext) {
 		Global.setPostNum(num);
 	});
 
+	// 公共事件：过滤已读帖子
+	let cDisposable9 = vscode.commands.registerCommand('nga.filterRead', async() => {
+		let bool = await vscode.window.showInputBox({
+			placeHolder: 'true',
+			prompt: '输入true或者false(注意大小写)',
+			value: Global.context?.globalState.get('filterRead')
+		});
+		if (bool === 'false') {
+			Global.context?.globalState.update('filterRead', false);
+		} else if (bool === 'true') {
+			Global.context?.globalState.update('filterRead', true);
+		}
+	});
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -127,6 +141,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cusDisposable4,
 		cDisposable7,
 		cDisposable8,
+		cDisposable9,
 	);
 }
 

@@ -23,7 +23,8 @@
       <a class="node" href="/thread.php?fid={{ topic.node.name }}">{{ topic.node.title }}</a>
       <a class="user text-bold" href="/nuke.php?func=ucp&uid={{ topic.authorID }}">{{ topic.authorName }}</a>
       <span class="time"> {{ topic.displayTime }} </span>
-      <a class="op refresh" href="javascript:;" onclick="vsPostMessage('OnlyAuthor');" title="只看楼主">只看楼主</a>
+      <a id="onlyAuthor" class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('onlyAuthor');" title="只看楼主">只看楼主</a>
+      <a id="cancelOnlyAuthor" class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('cancelOnlyAuthor');" title="取消只看楼主">取消只看楼主</a>
     </div>
     <hr />
 

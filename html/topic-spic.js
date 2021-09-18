@@ -15,18 +15,27 @@ vsPostMessage('setTitle', {
 
 // 给图片添加查看图片的功能
 document.querySelectorAll('img').forEach((img) => {
-  // img.onload = () => {
-    // if (img.width < 40 && img.height < 49) {
-    //   return;
-    // }
+  img.onload = () => {
+    console.log(img);
+    AutoResizeImage(40, 40, img);
     img.style.cursor = 'zoom-in';
     img.onclick = () => {
       console.log(img.src);
-      vsPostMessage('browseImage', {
-        src: img.src
-      });
+      AutoResizeImage(10000, 10000, img);
+      // vsPostMessage('browseImage', {
+      //   src: img.src
+      // });
     };
-  // };
+  };
+  if (img.width > 40) {
+    console.log(img);
+    AutoResizeImage(40, 40, img);
+    img.style.cursor = 'zoom-in';
+    img.onclick = () => {
+      console.log(img.src);
+      AutoResizeImage(10000, 10000, img);
+    };
+  }
 });
 
 // 图片地址的a标签，点击打开图片
@@ -82,4 +91,43 @@ function onSubmit() {
   vsPostMessage('postReply', {
     content: content
   });
+}
+
+function Resize(Ratio, objImg) {
+  var img = new Image();
+  img.src = objImg.src;
+  var w = img.width;
+  var h = img.height;
+  w = w * Ratio;
+  h = h * Ratio;
+  console.log(Ratio, img.width, img.height, w, h);
+  objImg.height = h;
+  objImg.width = w;
+}
+
+function AutoResizeImage(maxWidth, maxHeight, objImg) {
+  var img = new Image();
+  img.src = objImg.src;
+  var hRatio;
+  var wRatio;
+  var Ratio = 1;
+  var w = img.width;
+  var h = img.height;
+  wRatio = maxWidth / w;
+  hRatio = maxHeight / h;
+  if (maxWidth == 0 && maxHeight == 0) {
+    Ratio = 1;
+  } else if (maxWidth == 0) {//
+    if (hRatio < 1) Ratio = hRatio;
+  } else if (maxHeight == 0) {
+    if (wRatio < 1) Ratio = wRatio;
+  } else if (wRatio < 1 || hRatio < 1) {
+    Ratio = (wRatio <= hRatio ? wRatio : hRatio);
+  }
+  // if (Ratio < 1) {
+    w = w * Ratio;
+    h = h * Ratio;
+  // }
+  objImg.height = h;
+  objImg.width = w;
 }

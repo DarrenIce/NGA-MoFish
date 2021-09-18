@@ -85,8 +85,12 @@ blockquote p {
   opacity: 0.5;
 }
 
-.topic-meta .refresh {
+.topic-meta .onlyAuthor {
   margin-left: 10px;
+}
+
+.topic-meta .hidden {
+  display: none;
 }
 
 .topic-content {
