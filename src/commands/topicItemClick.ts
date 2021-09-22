@@ -103,7 +103,7 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
   });
 
   // 获取详情数据
-  NGA.getTopicDetail(topicLink)
+  NGA.getTopicDetail(topicLink, true)
     .then((detail) => {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
@@ -169,7 +169,7 @@ function loadTopicInPanel(panel: vscode.WebviewPanel, topicLink: string) {
   });
 
   // 获取详情数据
-  NGA.getTopicDetail(topicLink)
+  NGA.getTopicDetail(topicLink, false)
     .then((detail) => {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下

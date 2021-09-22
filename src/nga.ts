@@ -88,12 +88,14 @@ export class NGA {
         topicItemClick(node);
     }
 
-    static async getTopicDetail(topicLink: string): Promise<TopicDetail> {
+    static async getTopicDetail(topicLink: string, onlyAuthor: boolean): Promise<TopicDetail> {
 
         const res = await http.get<string>(topicLink + '&page=1', { responseType: 'arraybuffer' });
         // const $ = cheerio.load(res.data);
 
         const topic = new TopicDetail();
+
+        topic.onlyAuthor = onlyAuthor;
         let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         let js = JSON.parse(j).data;
@@ -283,6 +285,8 @@ export class TopicDetail {
     // 回复
     public replies: TopicReply[] = [];
     public comments: Comment[] = [];
+    // 只看楼主
+    public onlyAuthor: boolean = false;
 }
 
 export class TopicReply {
