@@ -42,11 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// 公共事件：复制链接
-	let cDisposable2 = vscode.commands.registerCommand('nga.copyLink', (item: TreeNode) => vscode.env.clipboard.writeText(item.link));
+	let cDisposable2 = vscode.commands.registerCommand('nga.copyLink', (item: TreeNode) => vscode.env.clipboard.writeText(item.link.slice(0,-8)));
 
 	// 公共事件：复制标题和链接
 	let cDisposable3 = vscode.commands.registerCommand('nga.copyTitleLink', (item: TreeNode) =>
-		vscode.env.clipboard.writeText(item.label + EOL + item.link)
+		vscode.env.clipboard.writeText(item.label + EOL + item.link.slice(0,-8))
 	);
 
 	// 公共事件：在浏览器中打开
