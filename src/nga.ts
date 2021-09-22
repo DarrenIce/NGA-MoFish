@@ -29,6 +29,7 @@ export class NGA {
         let maxnum = Global.getPostNum();
         console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js`);
         const list: Topic[] = [];
+        let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
             const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&page=${i}`, { responseType: 'arraybuffer' });
@@ -54,6 +55,9 @@ export class NGA {
                     sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
                     topic.title = `[${sub}]` + t.subject;
                     let tid = parseInt(t.tid);
+                    if (tids.indexOf(tid) !== -1) {
+                        continue;
+                    }
                     let readList = Global.getReadList();
                     if (readList.indexOf(tid) !== -1) {
                         if (Global.context?.globalState.get('filterRead')) {
@@ -65,6 +69,7 @@ export class NGA {
                     topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
                     topic.node = node;
                     list.push(topic);
+                    tids.push(tid);
                     nownum = nownum + 1;
                     if (nownum >= maxnum) {
                         return list;
