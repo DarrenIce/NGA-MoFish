@@ -93,7 +93,7 @@ export class NGA {
         topicItemClick(node);
     }
 
-    static async getTopicDetail(topicLink: string, onlyAuthor: boolean): Promise<TopicDetail> {
+    static async getTopicDetail(topicLink: string, onlyAuthor: boolean, page: number): Promise<TopicDetail> {
 
         const res = await http.get<string>(topicLink + '&page=1', { responseType: 'arraybuffer' });
         // const $ = cheerio.load(res.data);
@@ -101,6 +101,7 @@ export class NGA {
         const topic = new TopicDetail();
 
         topic.onlyAuthor = onlyAuthor;
+        topic.page = page;
         let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         if (Global.getStickerMode() === '0') {
@@ -148,9 +149,11 @@ export class NGA {
         }
         let pid2reply = new Map();
 
-        const _getTopicReplies = async (link: string): Promise<TopicReply[]> => {
+        const _getTopicReplies = async (link: string, page: number): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
-            for (let i = 1; i <= 1000; i++) {
+            let range = 5;
+            for (let i = (page-1)*range +1; i <= page*range; i++) {
+                topic.needTurn = true;
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
                 let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
@@ -160,6 +163,7 @@ export class NGA {
                 }
                 let js = JSON.parse(j).data;
                 if (js.__PAGE !== i) {
+                    topic.needTurn = false;
                     break;
                 }
 
@@ -171,7 +175,7 @@ export class NGA {
                     u.regDate = js.__U[val]?.regdate;
                     users.set(val, u);
                 }
-                for (let j = 1; j < js.__R__ROWS; j++) {
+                for (let j = i === 1 ? 1 : 0; j < js.__R__ROWS; j++) {
                     let rep = new TopicReply();
                     rep.pid = '' + js.__R[j].pid;
                     rep.uid = '' + js.__R[j].authorid;
@@ -248,7 +252,7 @@ export class NGA {
             return replies;
         };
 
-        topic.replies = await _getTopicReplies(topicLink);
+        topic.replies = await _getTopicReplies(topicLink, page);
         // console.log(topic.replies)
         // console.log(topic);
         return topic;
@@ -353,6 +357,10 @@ export class TopicDetail {
     public comments: Comment[] = [];
     // 只看楼主
     public onlyAuthor: boolean = false;
+    // 传递页码
+    public page: number = 0;
+    // 是否需要翻页
+    public needTurn: boolean = false;
 }
 
 export class TopicReply {

@@ -53,7 +53,7 @@
 
 
     <div class="topic-toolbar">
-      <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh');" title="刷新页面">刷新页面</a>
+      <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.page %>});" title="刷新页面">刷新页面</a>
       <span class="text count">
         {{topic.likes}} 👍
       </span>
@@ -106,6 +106,15 @@
       <hr />
       {{/each}}
     </div>
+    
+    {{if !topic.onlyAuthor && topic.needTurn}}
+      {{if topic.page > 1}}
+      <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.page-1 %>});" title="上一页">上一页</a>
+      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.page+1 %>});" title="下一页">下一页</a>
+      {{else}}
+      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.page+1 %>});" title="下一页">下一页</a>
+      {{/if}}
+    {{/if}}
 
   </div>
 

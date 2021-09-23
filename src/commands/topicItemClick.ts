@@ -76,20 +76,23 @@ export default function topicItemClick(item: TreeNode) {
         vscode.commands.executeCommand('nga.login');
         break;
       case 'refresh':
-        loadTopicInPanel(panel, item.link);
+        loadTopicInPanel(panel, item.link, message.page);
         break;
       case 'onlyAuthor':
         loadOnlyAuthor(panel,item.link);
         break;
       case 'cancelOnlyAuthor':
-        loadTopicInPanel(panel, item.link);
+        loadTopicInPanel(panel, item.link, 1);
+        break;
+      case 'pageTurning':
+        loadTopicInPanel(panel, item.link, message.page);
         break;
       default:
         break;
     }
   });
   console.log(item.link);
-  loadTopicInPanel(panel, item.link);
+  loadTopicInPanel(panel, item.link, 1);
 }
 
 /**
@@ -103,7 +106,7 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
   });
 
   // 获取详情数据
-  NGA.getTopicDetail(topicLink, true)
+  NGA.getTopicDetail(topicLink, true, 0)
     .then((detail) => {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
@@ -163,13 +166,13 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
  * @param panel panel
  * @param topicLink 话题链接
  */
-function loadTopicInPanel(panel: vscode.WebviewPanel, topicLink: string) {
+function loadTopicInPanel(panel: vscode.WebviewPanel, topicLink: string, page: number) {
   panel.webview.html = NGA.renderPage('loading.html', {
     contextPath: Global.getWebViewContextPath(panel.webview)
   });
 
   // 获取详情数据
-  NGA.getTopicDetail(topicLink, false)
+  NGA.getTopicDetail(topicLink, false, page)
     .then((detail) => {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
