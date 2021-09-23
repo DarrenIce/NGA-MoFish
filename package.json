@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -72,7 +72,7 @@
 			},
 			{
 				"command": "nga.showSticker",
-				"title": "是否开启小图模式",
+				"title": "选择图片模式",
 				"icon": "$(eye)"
 			},
 			{
@@ -84,6 +84,11 @@
 				"command": "nga.filterRead",
 				"title": "过滤已读帖子",
 				"icon": "$(filter)"
+			},
+			{
+				"command": "nga.search",
+				"title": "搜索",
+				"icon": "$(search)"
 			}
 		],
 		"viewsContainers": {
@@ -139,6 +144,11 @@
 					"command": "nga.filterRead",
 					"when": "view == nga-custom",
 					"group": "navigation@6"
+				},
+				{
+					"command": "nga.search",
+					"when": "view == nga-custom",
+					"group": "navigation@7"
 				}
 			],
 			"view/item/context": [

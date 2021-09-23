@@ -10,6 +10,7 @@ import removeNode from './commands/removeNode';
 import { EOL } from 'os';
 import Global from './global';
 import { NGA } from './nga';
+import search from './commands/search';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -125,6 +126,9 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	// 公共事件：搜索
+	let cDisposable10 = vscode.commands.registerCommand('nga.search', () => search());
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -140,6 +144,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable7,
 		cDisposable8,
 		cDisposable9,
+		cDisposable10,
 	);
 }
 

@@ -259,6 +259,57 @@ export class NGA {
         const html = template(templatePath, data);
         return html;
     }
+
+    /**
+     *
+     * @param q 查询关键词
+     * @param from 与第一个结果的偏移量（默认 0），比如 0, 10, 20
+     * @param size 结果数量（默认 10）
+     */
+    static async search(q: string, from = 0, size = 20): Promise<SearchElement[]> {
+        const se: SearchElement[] = [];
+        let pass = 0;
+        let count = 0;
+        for (let i =1; i <= 1000; i++) {
+            console.log(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js`)
+            const res = await http.get<string>(encodeURI(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js`), {
+                headers: {
+                    Cookie: Global.getCookie()
+                },
+                responseType: 'arraybuffer'
+            });
+            let j = res.data.replace('window.script_muti_get_var_store=', '');
+            let js = JSON.parse(j).data;
+            for (let val in js.__T) {
+                const t = js.__T[val];
+                if (t.subject === "帐号权限不足") {
+                     continue;
+                }
+                if (pass < from) {
+                    pass++;
+                    continue;
+                }
+                let s = new SearchElement();
+                s.id = parseInt(t.tid);
+                s.authorID = t.authorid;
+                s.authorName = t.author;
+                s.title = t.subject;
+                s.replies = parseInt(t.replies);
+                let date = new Date(parseInt(t.postdate) * 1000);
+                s.postdate = `${date.getFullYear()}-${NGA.stillTwo(date.getMonth() + 1)}-${NGA.stillTwo(date.getDate())} ${NGA.stillTwo(date.getHours())}:${NGA.stillTwo(date.getMinutes())}:${NGA.stillTwo(date.getSeconds())}`;
+                se.push(s);
+                count++;
+                if (count >= size) {
+                    return se;
+                }
+            }
+        }
+        return se;
+    }
+
+    static stillTwo(num: number): string {
+        return ("0" + num).substr(-2);
+    }
 }
 
 export class Node {
@@ -334,4 +385,13 @@ export class Comment {
     public authorName: string = '';
     public time: string = '';
     public content: string = '';
+}
+
+export class SearchElement {
+    public id: number = 0;
+    public authorID: string = '';
+    public authorName: string = '';
+    public title: string = '';
+    public postdate: string = '';
+    public replies: number = 0;
 }
