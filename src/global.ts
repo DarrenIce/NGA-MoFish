@@ -79,4 +79,20 @@ export default class Global {
     static setPostNum(num: number) {
         this.context?.globalState.update('postNum', num);
     }
+
+    static getStickerMode(): string {
+        return this.context?.globalState.get<string>('showSticker') || '0';
+    }
+
+    static setStickerMode(mode: string) {
+        this.context?.globalState.update('showSticker', mode);
+    }
+
+    static getFilterRead(): boolean {
+        return this.context?.globalState.get<boolean>('filterRead') || true;
+    }
+
+    static setFilterRead(mode: boolean) {
+        this.context?.globalState.update('filterRead', mode);
+    }
 }

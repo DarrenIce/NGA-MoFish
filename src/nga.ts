@@ -103,6 +103,9 @@ export class NGA {
         topic.onlyAuthor = onlyAuthor;
         let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
+        if (Global.getStickerMode() === '0') {
+            j = j.replace(/<img.*?>/g, '[img]');
+        }
         let js = JSON.parse(j).data;
         // console.log(js);
         topic.id = parseInt(js.__T.tid);
@@ -120,7 +123,9 @@ export class NGA {
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
         topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-        topic.content = processSmile(topic.content)
+        if (Global.getStickerMode() !== '0') {
+            topic.content = processSmile(topic.content);
+        }
         topic.replyCount = js.__T.replies;
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
@@ -150,6 +155,9 @@ export class NGA {
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
                 let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
                 // console.log(j);
+                if (Global.getStickerMode() === '0') {
+                    j = j.replace(/<img.*?>/g, '[img]');
+                }
                 let js = JSON.parse(j).data;
                 if (js.__PAGE !== i) {
                     break;
@@ -216,7 +224,9 @@ export class NGA {
                         rep.likes = js.__R[j].score;
                         // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
                         rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-                        rep.content = processSmile(rep.content);
+                        if (Global.getStickerMode() !== '0') {
+                            rep.content = processSmile(rep.content);
+                        }
                         pid2reply.set(rep.pid, rep);
                     }
 

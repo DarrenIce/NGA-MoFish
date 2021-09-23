@@ -114,7 +114,7 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
           }
       });
       detail.replies = onlyAuthorArr;
-      if (Global.context?.globalState.get('showSticker')) {
+      if (Global.context?.globalState.get('showSticker') === '1') {
 
         panel.webview.html = NGA.renderPage('topic-spic.html', {
           topic: detail,
@@ -173,7 +173,7 @@ function loadTopicInPanel(panel: vscode.WebviewPanel, topicLink: string) {
     .then((detail) => {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
-      if (Global.context?.globalState.get('showSticker')) {
+      if (Global.context?.globalState.get('showSticker') === '1') {
         panel.webview.html = NGA.renderPage('topic-spic.html', {
           topic: detail,
           // topicYml: yaml.safeDump(detail),
