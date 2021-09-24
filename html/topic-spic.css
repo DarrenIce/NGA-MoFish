@@ -254,3 +254,26 @@ blockquote img {
   color: var(--vscode-editor-foreground);
   cursor: pointer;
 }
+
+.page {
+	width:auto;
+	text-align:center;
+	/* height:50px; */
+	/*border:1px solid #F33; */
+	/*也可以这样设置,不过border和box-shadow还是有一定区别的,border占据空间,而box-shadow不占据空间*/
+	/* box-shadow:0 0 2px red; */
+	margin:0 auto;
+}
+
+.page a {
+	/* font-size:20px; */
+	/* color:#262626; */
+	/* margin-top:10px; */
+	/* line-height:50px; */
+	/* text-decoration:none; */
+	/*border:1px solid #F33; */
+	/*也可以这样设置,不过border和box-shadow还是有一定区别的,border占据空间,而box-shadow不占据空间*/
+	/* box-shadow:0 0 2px red; */
+	padding:8px;
+	margin:10px;
+}

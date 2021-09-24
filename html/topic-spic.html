@@ -53,7 +53,7 @@
 
 
     <div class="topic-toolbar">
-      <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.page %>});" title="刷新页面">刷新页面</a>
+      <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.pageNow %>});" title="刷新页面">刷新页面</a>
       <span class="text count">
         {{topic.likes}} 👍
       </span>
@@ -108,13 +108,24 @@
     </div>
     
     {{if !topic.onlyAuthor && topic.needTurn}}
-      {{if topic.page > 1}}
-      <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.page-1 %>});" title="上一页">上一页</a>
-      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.page+1 %>});" title="下一页">下一页</a>
+      {{if topic.pageNow > 1}}
+      <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow-1 %>});" title="上一页">上一页</a>
+      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow+1 %>});" title="下一页">下一页</a>
       {{else}}
-      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.page+1 %>});" title="下一页">下一页</a>
+      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow+1 %>});" title="下一页">下一页</a>
       {{/if}}
+      <hr />
     {{/if}}
+
+    <div class="pages">
+    <% for(var i = 1; i <= topic.pages; i++){ %>
+      <% if (i == topic.pageNow) {%>
+      <b>第<%- i %>页</b>
+      <%} else {%>
+      <a href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%- i %>});"><%- i %></a>
+      <%}%>
+    <% } %>
+    </div>
 
   </div>
 

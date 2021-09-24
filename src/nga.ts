@@ -99,9 +99,10 @@ export class NGA {
         // const $ = cheerio.load(res.data);
 
         const topic = new TopicDetail();
+        let range = 5;
 
         topic.onlyAuthor = onlyAuthor;
-        topic.page = page;
+        topic.pageNow = page;
         let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         if (Global.getStickerMode() === '0') {
@@ -128,6 +129,7 @@ export class NGA {
             topic.content = processSmile(topic.content);
         }
         topic.replyCount = js.__T.replies;
+        topic.pages = Math.ceil(topic.replyCount / (range * 20));
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
             let users = new Map();
@@ -151,7 +153,6 @@ export class NGA {
 
         const _getTopicReplies = async (link: string, page: number): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
-            let range = 5;
             for (let i = (page-1)*range +1; i <= page*range; i++) {
                 topic.needTurn = true;
                 console.log(topicLink + '&page=' + i);
@@ -358,9 +359,11 @@ export class TopicDetail {
     // 只看楼主
     public onlyAuthor: boolean = false;
     // 传递页码
-    public page: number = 0;
+    public pageNow: number = 0;
     // 是否需要翻页
     public needTurn: boolean = false;
+    // 页码数
+    public pages: number = 0;
 }
 
 export class TopicReply {
