@@ -151,9 +151,10 @@ export class NGA {
         }
         let pid2reply = new Map();
 
-        const _getTopicReplies = async (link: string, page: number): Promise<TopicReply[]> => {
+        const _getTopicReplies = async (link: string, onlyAuthor: boolean, page: number): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
-            for (let i = (page-1)*range +1; i <= page*range; i++) {
+            page = 1000;
+            for (let i = onlyAuthor? 1 : (page-1)*range +1; i <= page*range; i++) {
                 topic.needTurn = true;
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
@@ -253,7 +254,7 @@ export class NGA {
             return replies;
         };
 
-        topic.replies = await _getTopicReplies(topicLink, page);
+        topic.replies = await _getTopicReplies(topicLink, onlyAuthor, page);
         // console.log(topic.replies)
         // console.log(topic);
         return topic;

@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	// 公共事件：在浏览器中打开
-	let cDisposable4 = vscode.commands.registerCommand('nga.viewInBrowser', (item: TreeNode) => vscode.env.openExternal(vscode.Uri.parse(item.link)));
+	let cDisposable4 = vscode.commands.registerCommand('nga.viewInBrowser', (item: TreeNode) => vscode.env.openExternal(vscode.Uri.parse(item.link.slice(0,-8))));
 
 	// 公共事件：点击浏览帖子
 	let cDisposable5 = vscode.commands.registerCommand('nga.topicItemClick', (item: TreeNode) => topicItemClick(item));

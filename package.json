@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.4.5",
+	"version": "1.4.6",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -104,7 +104,7 @@
 			"nga": [
 				{
 					"id": "nga-custom",
-					"name": "自定义"
+					"name": "节点"
 				}
 			]
 		},
