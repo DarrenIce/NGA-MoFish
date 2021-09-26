@@ -257,6 +257,9 @@ export class NGA {
         };
 
         topic.replies = await _getTopicReplies(topicLink, onlyAuthor, page);
+        if (page == topic.pages) {
+            topic.needTurn = false;
+        }
         // console.log(topic.replies)
         // console.log(topic);
         return topic;

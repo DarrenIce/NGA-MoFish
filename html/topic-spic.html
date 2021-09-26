@@ -117,6 +117,7 @@
       <hr />
     {{/if}}
 
+    {{if !topic.onlyAuthor}}
     <div class="pages">
     <% for(var i = 1; i <= topic.pages; i++){ %>
       <% if (i == topic.pageNow) {%>
@@ -126,6 +127,7 @@
       <%}%>
     <% } %>
     </div>
+    {{/if}}
 
   </div>
 
