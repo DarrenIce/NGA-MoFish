@@ -153,7 +153,9 @@ export class NGA {
 
         const _getTopicReplies = async (link: string, onlyAuthor: boolean, page: number): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
-            page = 1000;
+            if (onlyAuthor) {
+                page = 1000;
+            }
             for (let i = onlyAuthor? 1 : (page-1)*range +1; i <= page*range; i++) {
                 topic.needTurn = true;
                 console.log(topicLink + '&page=' + i);
