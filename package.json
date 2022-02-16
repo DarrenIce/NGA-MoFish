@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.4.8",
+	"version": "1.4.9",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -89,6 +89,10 @@
 				"command": "nga.search",
 				"title": "搜索",
 				"icon": "$(search)"
+			},
+			{
+				"command": "nga.setRead",
+				"title": "标为已读"
 			}
 		],
 		"viewsContainers": {
@@ -172,6 +176,10 @@
 				{
 					"command": "nga-custom.removeNode",
 					"when": "view == nga-custom && viewItem == dir"
+				},
+				{
+					"command": "nga.setRead",
+					"when": "viewItem == item"
 				}
 			]
 		}

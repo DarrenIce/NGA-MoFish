@@ -11,6 +11,7 @@ import { EOL } from 'os';
 import Global from './global';
 import { NGA } from './nga';
 import search from './commands/search';
+import { parse } from 'path';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -129,6 +130,8 @@ export function activate(context: vscode.ExtensionContext) {
 	// 公共事件：搜索
 	let cDisposable10 = vscode.commands.registerCommand('nga.search', () => search());
 
+	let cDisposable11 = vscode.commands.registerCommand('nga.setRead', (item: TreeNode) => Global.addReadTid(parseInt(item.link.match(/tid=\d+/)![0].slice(4))));
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -145,6 +148,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable8,
 		cDisposable9,
 		cDisposable10,
+		cDisposable11,
 	);
 }
 

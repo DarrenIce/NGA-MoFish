@@ -64,7 +64,7 @@ export default class Global {
         if (list.indexOf(tid) !== -1) {
             return false;
         }
-        if (list.length === 500) {
+        if (list.length === 1000) {
             list.pop();
         }
         list.unshift(tid);
