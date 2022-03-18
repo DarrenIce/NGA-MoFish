@@ -27,16 +27,16 @@ export class NGA {
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         let maxnum = Global.getPostNum();
-        console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js`);
+        console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&page=${i}`, { responseType: 'arraybuffer' });
-            let j = res.data.replace('window.script_muti_get_var_store=', '');
+            const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
+            // let j = res.data.replace('window.script_muti_get_var_store=', '');
             // console.log(j)
             try {
-                let js = JSON.parse(j).data;
+                let js = JSON.parse(res.data).data;
                 let fid2name = new Map();
                 for (let f in js.__F.sub_forums) {
                     fid2name.set(f, js.__F.sub_forums[f]['1']);
@@ -66,7 +66,7 @@ export class NGA {
                             topic.title = `(已读)` + topic.title;
                         }
                     }
-                    topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js';
+                    topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js&noprefix';
                     topic.node = node;
                     list.push(topic);
                     tids.push(tid);
@@ -84,12 +84,12 @@ export class NGA {
     }
 
     static async getTopicByTid(tid: string) {
-        const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
-        let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
+        let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
-        node.link = `https://bbs.nga.cn/read.php?lite=js&tid=${tid}`;
+        node.link = `https://bbs.nga.cn/read.php?lite=js&noprefix&tid=${tid}`;
         topicItemClick(node);
     }
 
@@ -103,7 +103,7 @@ export class NGA {
 
         topic.onlyAuthor = onlyAuthor;
         topic.pageNow = page;
-        let j = res.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         if (Global.getStickerMode() === '0') {
             j = j.replace(/<img.*?>/g, '[img]');
@@ -160,7 +160,7 @@ export class NGA {
                 topic.needTurn = true;
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                let j = rs.data.replace('window.script_muti_get_var_store=', '').replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
                 // console.log(j);
                 if (Global.getStickerMode() === '0') {
                     j = j.replace(/<img.*?>/g, '[img]');
@@ -282,15 +282,15 @@ export class NGA {
         let pass = 0;
         let count = 0;
         for (let i =1; i <= 1000; i++) {
-            console.log(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js`)
-            const res = await http.get<string>(encodeURI(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js`), {
+            console.log(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
+            const res = await http.get<string>(encodeURI(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
                 headers: {
                     Cookie: Global.getCookie()
                 },
                 responseType: 'arraybuffer'
             });
-            let j = res.data.replace('window.script_muti_get_var_store=', '');
-            let js = JSON.parse(j).data;
+            // let j = res.data.replace('window.script_muti_get_var_store=', '');
+            let js = JSON.parse(res.data).data;
             for (let val in js.__T) {
                 const t = js.__T[val];
                 if (t.subject === "帐号权限不足") {
