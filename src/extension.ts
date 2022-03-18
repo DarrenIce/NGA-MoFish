@@ -44,15 +44,15 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// 公共事件：复制链接
-	let cDisposable2 = vscode.commands.registerCommand('nga.copyLink', (item: TreeNode) => vscode.env.clipboard.writeText(item.link.slice(0,-8)));
+	let cDisposable2 = vscode.commands.registerCommand('nga.copyLink', (item: TreeNode) => vscode.env.clipboard.writeText(item.link.slice(0,-17)));
 
 	// 公共事件：复制标题和链接
 	let cDisposable3 = vscode.commands.registerCommand('nga.copyTitleLink', (item: TreeNode) =>
-		vscode.env.clipboard.writeText(item.label + EOL + item.link.slice(0,-8))
+		vscode.env.clipboard.writeText(item.label + EOL + item.link.slice(0,-17))
 	);
 
 	// 公共事件：在浏览器中打开
-	let cDisposable4 = vscode.commands.registerCommand('nga.viewInBrowser', (item: TreeNode) => vscode.env.openExternal(vscode.Uri.parse(item.link.slice(0,-8))));
+	let cDisposable4 = vscode.commands.registerCommand('nga.viewInBrowser', (item: TreeNode) => vscode.env.openExternal(vscode.Uri.parse(item.link.slice(0,-17))));
 
 	// 公共事件：点击浏览帖子
 	let cDisposable5 = vscode.commands.registerCommand('nga.topicItemClick', (item: TreeNode) => topicItemClick(item));
