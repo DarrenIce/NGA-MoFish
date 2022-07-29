@@ -52,9 +52,10 @@ export class NGA {
                     if (t.fid != node.name) {
                         continue;
                     }
-                    let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
-                    sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
-                    topic.title = `[${sub}]` + t.subject;
+                    // let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
+                    // sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
+                    // topic.title = `[${sub}]` + t.subject;
+                    topic.title = t.subject;
                     let tid = parseInt(t.tid);
                     if (tids.indexOf(tid) !== -1) {
                         continue;
@@ -106,6 +107,7 @@ export class NGA {
         if (Global.getStickerMode() === '0') {
             j = j.replace(/<img.*?>/g, '[img]');
         }
+        console.log(j);
         let js = JSON5.parse(j).data;
         console.log(JSON5.stringify(js));
         topic.id = parseInt(js.__T.tid);
@@ -165,6 +167,7 @@ export class NGA {
                     j = j.replace(/<img.*?>/g, '[img]');
                 }
                 // let js = JSON.parse(j).data;
+                console.log(j);
                 let js = JSON5.parse(j).data;
                 if (js.__PAGE !== i) {
                     topic.needTurn = false;
