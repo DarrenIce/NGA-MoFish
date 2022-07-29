@@ -102,7 +102,7 @@ export class NGA {
 
         topic.onlyAuthor = onlyAuthor;
         topic.pageNow = page;
-        let j = res.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>');
+        let j = res.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
         if (Global.getStickerMode() === '0') {
             j = j.replace(/<img.*?>/g, '[img]');
         }
@@ -159,7 +159,7 @@ export class NGA {
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
                 // let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-                let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>');
+                let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
                 // console.log(j);
                 if (Global.getStickerMode() === '0') {
                     j = j.replace(/<img.*?>/g, '[img]');
