@@ -9,6 +9,7 @@ import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
 import {processSmile} from './process/smile';
 import { readlink } from 'fs';
+import * as JSON5 from 'json5';
 
 export class NGA {
 
@@ -96,20 +97,17 @@ export class NGA {
     static async getTopicDetail(topicLink: string, onlyAuthor: boolean, page: number): Promise<TopicDetail> {
 
         const res = await http.get<string>(topicLink + '&page=1', { responseType: 'arraybuffer' });
-        // const $ = cheerio.load(res.data);
-
         const topic = new TopicDetail();
         let range = 5;
 
         topic.onlyAuthor = onlyAuthor;
         topic.pageNow = page;
-        let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-        // console.log(j);
+        let j = res.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>');
         if (Global.getStickerMode() === '0') {
             j = j.replace(/<img.*?>/g, '[img]');
         }
-        let js = JSON.parse(j).data;
-        // console.log(js);
+        let js = JSON5.parse(j).data;
+        console.log(JSON5.stringify(js));
         topic.id = parseInt(js.__T.tid);
         Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
@@ -160,12 +158,14 @@ export class NGA {
                 topic.needTurn = true;
                 console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                // let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>');
                 // console.log(j);
                 if (Global.getStickerMode() === '0') {
                     j = j.replace(/<img.*?>/g, '[img]');
                 }
-                let js = JSON.parse(j).data;
+                // let js = JSON.parse(j).data;
+                let js = JSON5.parse(j).data;
                 if (js.__PAGE !== i) {
                     topic.needTurn = false;
                     break;
