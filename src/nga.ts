@@ -17,7 +17,7 @@ export class NGA {
         if (!cookie) {
             return false;
         }
-        const res = await http.get('https://bbs.nga.cn/thread.php?fid=-7', {
+        const res = await http.get('https://nga.178.com/thread.php?fid=-7', {
             headers: {
                 Cookie: cookie
             },
@@ -28,12 +28,12 @@ export class NGA {
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         let maxnum = Global.getPostNum();
-        console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&noprefix`);
+        console.log(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
+            const res = await http.get(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
             // let j = res.data.replace('window.script_muti_get_var_store=', '');
             // console.log(j)
             try {
@@ -68,7 +68,7 @@ export class NGA {
                             topic.title = `(已读)` + topic.title;
                         }
                     }
-                    topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js&noprefix';
+                    topic.link = 'https://nga.178.com' + t.tpcurl + '&lite=js&noprefix';
                     topic.node = node;
                     list.push(topic);
                     tids.push(tid);
@@ -86,12 +86,12 @@ export class NGA {
     }
 
     static async getTopicByTid(tid: string) {
-        const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
+        const res = await http.get(`https://nga.178.com/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
         let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
-        node.link = `https://bbs.nga.cn/read.php?lite=js&noprefix&tid=${tid}`;
+        node.link = `https://nga.178.com/read.php?lite=js&noprefix&tid=${tid}`;
         topicItemClick(node);
     }
 
