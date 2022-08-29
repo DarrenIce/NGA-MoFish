@@ -18,8 +18,8 @@ export default async function addNode(): Promise<boolean> {
     return false;
   }
   console.log('添加的分区fid', fid);
-  console.log(`https://bbs.nga.cn/thread.php?fid=${fid}`);
-  const r = await http.get(`https://bbs.nga.cn/thread.php?fid=${fid}`, { responseType: 'arraybuffer' });
+  console.log(`https://nga.178.com/thread.php?fid=${fid}`);
+  const r = await http.get(`https://nga.178.com/thread.php?fid=${fid}`, { responseType: 'arraybuffer' });
   const $ = cheerio.load(r.data);
   const t = $('head title').text().replace(' NGA玩家社区', '');
   console.log('添加的分区title', t);

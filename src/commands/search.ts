@@ -69,6 +69,6 @@ async function showQuickPick(searchList: SearchElement[]) {
     return;
   }
   const node = new TreeNode(select.title, false);
-  node.link = `https://bbs.nga.cn/read.php?lite=js&noprefix&tid=${select.topicId}`;
+  node.link = `https://nga.178.com/read.php?lite=js&noprefix&tid=${select.topicId}`;
   topicItemClick(node);
 }
