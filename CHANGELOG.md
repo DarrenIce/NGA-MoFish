@@ -1,8 +1,12 @@
 # 更新日志
 
+## [1.4.15]
+
+- [Gaays](https://github.com/Gaays):还原nga域名并修改ua，解决无法查看评论的问题
+
 ## [1.4.14]
 
-- 切换nga域名
+- [Gaays](https://github.com/Gaays):切换nga域名
 
 ## [1.4.13]
 
