@@ -17,7 +17,7 @@ export class NGA {
         if (!cookie) {
             return false;
         }
-        const res = await http.get('https://nga.178.com/thread.php?fid=-7', {
+        const res = await http.get('https://bbs.nga.cn/thread.php?fid=-7', {
             headers: {
                 Cookie: cookie
             },
@@ -25,15 +25,15 @@ export class NGA {
         });
         return res.request._redirectable._redirectCount <= 0;
     }
-
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
+        console.log(http);
         let maxnum = Global.getPostNum();
-        console.log(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&noprefix`);
+        // console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
+            const res = await http.get(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
             // let j = res.data.replace('window.script_muti_get_var_store=', '');
             // console.log(j)
             try {
@@ -68,7 +68,7 @@ export class NGA {
                             topic.title = `(已读)` + topic.title;
                         }
                     }
-                    topic.link = 'https://nga.178.com' + t.tpcurl + '&lite=js&noprefix';
+                    topic.link = 'https://bbs.nga.cn' + t.tpcurl + '&lite=js&noprefix';
                     topic.node = node;
                     list.push(topic);
                     tids.push(tid);
@@ -86,12 +86,12 @@ export class NGA {
     }
 
     static async getTopicByTid(tid: string) {
-        const res = await http.get(`https://nga.178.com/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
-        let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+        const res = await http.get(`https://bbs.nga.cn/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
+        let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.bbs.nga.cn/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
-        node.link = `https://nga.178.com/read.php?lite=js&noprefix&tid=${tid}`;
+        node.link = `https://bbs.nga.cn/read.php?lite=js&noprefix&tid=${tid}`;
         topicItemClick(node);
     }
 
@@ -103,13 +103,13 @@ export class NGA {
 
         topic.onlyAuthor = onlyAuthor;
         topic.pageNow = page;
-        let j = res.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
+        let j = res.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.bbs.nga.cn/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
         if (Global.getStickerMode() === '0') {
             j = j.replace(/<img.*?>/g, '[img]');
         }
-        console.log(j);
+        // console.log(j);
         let js = JSON5.parse(j).data;
-        console.log(JSON5.stringify(js));
+        // console.log(JSON5.stringify(js));
         topic.id = parseInt(js.__T.tid);
         Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
@@ -158,16 +158,16 @@ export class NGA {
             }
             for (let i = onlyAuthor? 1 : (page-1)*range +1; i <= page*range; i++) {
                 topic.needTurn = true;
-                console.log(topicLink + '&page=' + i);
+                // console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                // let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-                let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
+                // let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.bbs.nga.cn/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
+                let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.bbs.nga.cn/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
                 // console.log(j);
                 if (Global.getStickerMode() === '0') {
                     j = j.replace(/<img.*?>/g, '[img]');
                 }
                 // let js = JSON.parse(j).data;
-                console.log(j);
+                // console.log(j);
                 let js = JSON5.parse(j).data;
                 if (js.__PAGE !== i) {
                     topic.needTurn = false;
@@ -285,8 +285,8 @@ export class NGA {
         let pass = 0;
         let count = 0;
         for (let i =1; i <= 1000; i++) {
-            console.log(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
-            const res = await http.get<string>(encodeURI(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
+            console.log(`https://bbs.nga.cn/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
+            const res = await http.get<string>(encodeURI(`https://bbs.nga.cn/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
                 headers: {
                     Cookie: Global.getCookie()
                 },
