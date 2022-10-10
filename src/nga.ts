@@ -25,10 +25,10 @@ export class NGA {
         });
         return res.request._redirectable._redirectCount <= 0;
     }
-
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
+        console.log(http);
         let maxnum = Global.getPostNum();
-        console.log(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&noprefix`);
+        // console.log(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;
@@ -107,9 +107,9 @@ export class NGA {
         if (Global.getStickerMode() === '0') {
             j = j.replace(/<img.*?>/g, '[img]');
         }
-        console.log(j);
+        // console.log(j);
         let js = JSON5.parse(j).data;
-        console.log(JSON5.stringify(js));
+        // console.log(JSON5.stringify(js));
         topic.id = parseInt(js.__T.tid);
         Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
@@ -158,7 +158,7 @@ export class NGA {
             }
             for (let i = onlyAuthor? 1 : (page-1)*range +1; i <= page*range; i++) {
                 topic.needTurn = true;
-                console.log(topicLink + '&page=' + i);
+                // console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
                 // let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
                 let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
@@ -167,7 +167,7 @@ export class NGA {
                     j = j.replace(/<img.*?>/g, '[img]');
                 }
                 // let js = JSON.parse(j).data;
-                console.log(j);
+                // console.log(j);
                 let js = JSON5.parse(j).data;
                 if (js.__PAGE !== i) {
                     topic.needTurn = false;
