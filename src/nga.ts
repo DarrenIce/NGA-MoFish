@@ -1,15 +1,13 @@
 import Global from './global';
 import http from './http';
-import * as cheerio from 'cheerio';
-import { AxiosResponse } from 'axios';
 import * as template from 'art-template';
 import * as path from 'path';
-import { report } from 'process';
 import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
 import {processSmile} from './process/smile';
-import { readlink } from 'fs';
 import * as JSON5 from 'json5';
+
+
 
 export class NGA {
 
@@ -17,7 +15,7 @@ export class NGA {
         if (!cookie) {
             return false;
         }
-        const res = await http.get('https://nga.178.com/thread.php?fid=-7', {
+        const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=-7`, {
             headers: {
                 Cookie: cookie
             },
@@ -25,6 +23,7 @@ export class NGA {
         });
         return res.request._redirectable._redirectCount <= 0;
     }
+
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         console.log(http);
         let maxnum = Global.getPostNum();
@@ -33,9 +32,7 @@ export class NGA {
         let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
-            // let j = res.data.replace('window.script_muti_get_var_store=', '');
-            // console.log(j)
+            const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
             try {
                 let js = JSON.parse(res.data).data;
                 let fid2name = new Map();
@@ -48,13 +45,9 @@ export class NGA {
                 for (let val in js.__T) {
                     const topic = new Topic();
                     const t = js.__T[val];
-                    // console.log(t)
                     if (t.fid != node.name) {
                         continue;
                     }
-                    // let sub = fid2name.has('' + t.fid) ? fid2name.get('' + t.fid) : '';
-                    // sub = sub.length <= 5 ? sub : sub.slice(0,5) + '...';
-                    // topic.title = `[${sub}]` + t.subject;
                     topic.title = t.subject;
                     let tid = parseInt(t.tid);
                     if (tids.indexOf(tid) !== -1) {
@@ -68,7 +61,7 @@ export class NGA {
                             topic.title = `(已读)` + topic.title;
                         }
                     }
-                    topic.link = 'https://nga.178.com' + t.tpcurl + '&lite=js&noprefix';
+                    topic.link = `https://${Global.ngaURL}${t.tpcurl}&lite=js&noprefix`;
                     topic.node = node;
                     list.push(topic);
                     tids.push(tid);
@@ -86,12 +79,12 @@ export class NGA {
     }
 
     static async getTopicByTid(tid: string) {
-        const res = await http.get(`https://nga.178.com/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
+        const res = await http.get(`https://${Global.ngaURL}/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
         let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
-        node.link = `https://nga.178.com/read.php?lite=js&noprefix&tid=${tid}`;
+        node.link = `https://${Global.ngaURL}/read.php?lite=js&noprefix&tid=${tid}`;
         topicItemClick(node);
     }
 
@@ -118,8 +111,7 @@ export class NGA {
             name: js.__R['0'].fid,
             title: js.__F.name || ''
         };
-        // topic.authorName = js.__T.author;
-        // topic.authorID = js.__T.authorid;
+
         topic.authorID = js.__R['0'].authorid;
         topic.authorName = js.__U[topic.authorID].username;
         topic.displayTime = js.__R['0'].postdate || '';
@@ -166,7 +158,6 @@ export class NGA {
                 if (Global.getStickerMode() === '0') {
                     j = j.replace(/<img.*?>/g, '[img]');
                 }
-                // let js = JSON.parse(j).data;
                 // console.log(j);
                 let js = JSON5.parse(j).data;
                 if (js.__PAGE !== i) {
@@ -191,23 +182,6 @@ export class NGA {
                     rep.floor = js.__R[j].lou;
                     rep.content = js.__R[j].hasOwnProperty('content') ? ""+js.__R[j].content : ""+js.__R[j].subject;
                     if (js.__R[j].hasOwnProperty('content')) {
-                        // if (rep.content.startsWith('[quote]')) {
-                        //     rep.quote = rep.content.match(/\[quote\].*\[\/quote\]/g) ? rep.content.match(/\[quote\].*\[\/quote\]/g)![0] : rep.content.match(/\[quote\].*\[\/b\]/g)![0];
-                        //     rep.quoteuid = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=(\d+?)\]/g)![0].replace(/\[uid=/g, '').replace(/\]/g, '') : '-1';
-                        //     rep.quoteuname = rep.quote.indexOf('[uid]') === -1 ? rep.quote.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.quote.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
-                        //     rep.quote = rep.quote.replace(/\[quote\].*?\[\/b\]/g, '').replace(/\[\/quote\]/g, '').replace('<br/><br/>', '').replace(/<br\/>/g, '\n');
-                        //     rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '');
-                        // } else if (rep.content.startsWith('[b]') && rep.content.indexOf('Post') !== -1) {
-                        //     let rdate = rep.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g)![0];
-                        //     rep.quoteuname = rep.content.indexOf('[uid]') === -1 ? rep.content.match(/\[uid=\d+\](.*?)\[\/uid\]/g)![0].replace(/\[uid=\d+\]/g, '').replace(/\[\/uid\]/g, '') : rep.content.match(/\[uid\](.*?)\[\/uid\]/g)![0].replace(/\[uid\]/g, '').replace(/\[\/uid\]/g, '');
-                        //     for (let k=0; k < replies.length; k++) {
-                        //         if (replies[k].userName === rep.quoteuname && replies[k].time === rdate) {
-                        //             rep.quote = replies[k].content;
-                        //             rep.quoteuid = replies[k].uid;
-                        //             break;
-                        //         }
-                        //     }
-                        //     rep.content = rep.content.replace(/\[b\].*\[\/b\]/g, '');
                         js.__R[j].content = ""+js.__R[j].content;
                         if (js.__R[j].hasOwnProperty('reply_to')) {
                             let rtpid = '' + js.__R[j].reply_to;
@@ -231,7 +205,6 @@ export class NGA {
                             
                             rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, ''); 
                         }
-                        // }
                         rep.likes = js.__R[j].score;
                         // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
                         rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
@@ -285,8 +258,8 @@ export class NGA {
         let pass = 0;
         let count = 0;
         for (let i =1; i <= 1000; i++) {
-            console.log(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
-            const res = await http.get<string>(encodeURI(`https://nga.178.com/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
+            console.log(`https://${Global.ngaURL}/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
+            const res = await http.get<string>(encodeURI(`https://${Global.ngaURL}/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
                 headers: {
                     Cookie: Global.getCookie()
                 },

@@ -2,6 +2,7 @@ import { TreeNode } from './../providers/BaseProvider';
 import { NGA, SearchElement } from './../nga';
 import * as vscode from 'vscode';
 import topicItemClick from './topicItemClick';
+import Global from '../global';
 
 /**上次的搜索结果 */
 var _lastSearchList: SearchElement[] | undefined = undefined;
@@ -69,6 +70,6 @@ async function showQuickPick(searchList: SearchElement[]) {
     return;
   }
   const node = new TreeNode(select.title, false);
-  node.link = `https://nga.178.com/read.php?lite=js&noprefix&tid=${select.topicId}`;
+  node.link = `https://${Global.ngaURL}/read.php?lite=js&noprefix&tid=${select.topicId}`;
   topicItemClick(node);
 }
