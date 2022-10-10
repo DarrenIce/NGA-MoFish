@@ -223,35 +223,35 @@ export function processSmile(content: string): string {
     let rex = content.match(/\[s\:ac\:.+?\]/g);
     if (rex !== null) {
         for (let i=0; i<rex.length; i++) {
-            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.bbs.nga.cn/ngabbs/post/smile/${(smile_ac as Dict)[rex[i].replace('[s:ac:', '').replace(']', '')]}">`);
+            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.nga.178.com/ngabbs/post/smile/${(smile_ac as Dict)[rex[i].replace('[s:ac:', '').replace(']', '')]}">`);
         }
     }
 
     rex = content.match(/\[s\:a2\:.+?\]/g);
     if (rex !== null) {
         for (let i=0; i<rex.length; i++) {
-            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.bbs.nga.cn/ngabbs/post/smile/${(smile_a2 as Dict)[rex[i].replace('[s:a2:', '').replace(']', '')]}">`);
+            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.nga.178.com/ngabbs/post/smile/${(smile_a2 as Dict)[rex[i].replace('[s:a2:', '').replace(']', '')]}">`);
         }
     }
 
     rex = content.match(/\[s\:pst\:.+?\]/g);
     if (rex !== null) {
         for (let i=0; i<rex.length; i++) {
-            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.bbs.nga.cn/ngabbs/post/smile/${(smile_pst as Dict)[rex[i].replace('[s:pst:', '').replace(']', '')]}">`);
+            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.nga.178.com/ngabbs/post/smile/${(smile_pst as Dict)[rex[i].replace('[s:pst:', '').replace(']', '')]}">`);
         }
     }
 
     rex = content.match(/\[s\:dt\:.+?\]/g);
     if (rex !== null) {
         for (let i=0; i<rex.length; i++) {
-            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.bbs.nga.cn/ngabbs/post/smile/${(smile_dt as Dict)[rex[i].replace('[s:dt:', '').replace(']', '')]}">`);
+            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.nga.178.com/ngabbs/post/smile/${(smile_dt as Dict)[rex[i].replace('[s:dt:', '').replace(']', '')]}">`);
         }
     }
 
     rex = content.match(/\[s\:pg\:.+?\]/g);
     if (rex !== null) {
         for (let i=0; i<rex.length; i++) {
-            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.bbs.nga.cn/ngabbs/post/smile/${(smile_pg as Dict)[rex[i].replace('[s:pg:', '').replace(']', '')]}">`);
+            content = content.replace(rex[i], `<img style="background-color: #FFFAFA" src="https://img4.nga.178.com/ngabbs/post/smile/${(smile_pg as Dict)[rex[i].replace('[s:pg:', '').replace(']', '')]}">`);
         }
     }
 
