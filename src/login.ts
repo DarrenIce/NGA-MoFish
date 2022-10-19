@@ -25,7 +25,7 @@ export default async function login(): Promise<LoginResult> {
     await Global.setCookie('');
     return LoginResult.logout;
   }
-
+  
   const isLoginSuccess = await vscode.window.withProgress(
     {
       title: '正在登录',

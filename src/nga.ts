@@ -15,7 +15,7 @@ export class NGA {
         if (!cookie) {
             return false;
         }
-        const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=-7`, {
+        const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=479`, {
             headers: {
                 Cookie: cookie
             },
