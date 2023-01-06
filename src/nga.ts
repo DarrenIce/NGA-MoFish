@@ -25,9 +25,9 @@ export class NGA {
     }
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
-        console.log(http);
+        console.log(Global.ngaURL);
         let maxnum = Global.getPostNum();
-        // console.log(`https://nga.178.com/thread.php?fid=${node.name}&lite=js&noprefix`);
+        // console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;

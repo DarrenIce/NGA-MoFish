@@ -3,7 +3,7 @@ import { Node } from './nga';
 import * as iconvlite from 'iconv-lite';
 
 export default class Global {
-    static ngaURL = 'nga.178.com';
+    static ngaURL = 'bbs.nga.cn';
 
     static context: ExtensionContext | undefined;
 
