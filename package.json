@@ -59,7 +59,7 @@
 			{
 				"command": "nga-custom.syncCollect",
 				"title": "同步收藏",
-				"icon": "$(refresh)"
+				"icon": "$(sync)"
 			},
 			{
 				"command": "nga-custom.refreshAll",
