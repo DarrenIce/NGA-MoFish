@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.4.17",
+	"version": "1.5.1",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -20,7 +20,8 @@
 	"activationEvents": [
 		"onView:nga-custom",
 		"onCommand:nga.test",
-		"onCommand:nga.login"
+		"onCommand:nga.login",
+		"onCommand:nga-custom.syncCollect"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
