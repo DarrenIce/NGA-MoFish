@@ -272,6 +272,9 @@ export class NGA {
                 if (t.subject === "帐号权限不足") {
                      continue;
                 }
+                if (t.subject === "帖子发布或回复时间超过限制") {
+                    continue;
+                }
                 if (pass < from) {
                     pass++;
                     continue;
