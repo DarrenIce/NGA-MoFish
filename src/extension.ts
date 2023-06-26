@@ -6,6 +6,7 @@ import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
 import CustomProvider from './providers/CustomProvider';
 import addNode from './commands/addNode';
+import syncCollect from './commands/syncCollect';
 import removeNode from './commands/removeNode';
 import { EOL } from 'os';
 import Global from './global';
@@ -68,7 +69,6 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		NGA.getTopicByTid(tid);
 	});
-
 	// 自定义视图事件：添加自定义节点
 	let cusDisposable1 = vscode.commands.registerCommand('nga-custom.addNode', async () => {
 		const isAdd = await addNode();
@@ -132,6 +132,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let cDisposable11 = vscode.commands.registerCommand('nga.setRead', (item: TreeNode) => Global.addReadTid(parseInt(item.link.match(/tid=\d+/)![0].slice(4))));
 
+	// 自定义视图事件：同步收藏版块
+	let cDisposable12 = vscode.commands.registerCommand('nga-custom.syncCollect', async () => {
+		const isAdd = await syncCollect();
+		isAdd && customProvider.refreshNodeList();
+	});
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -149,6 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable9,
 		cDisposable10,
 		cDisposable11,
+		cDisposable12,
 	);
 }
 

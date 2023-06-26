@@ -36,10 +36,15 @@ export default class Global {
     static addCustomNode(node: Node): boolean {
         const nodes = this.getCustomNodes();
         // 如果节点已经有了，则忽略
-        if (nodes.find((n) => n.name === node.name)) {
+        // 如果节点fid相同但是名称不同，则更新名称
+        let _node = nodes.find((n) => n.name === node.name);
+        if (_node && _node.title === node.title) {
             return false;
+        } else if (_node) {
+            _node.title = node.title;
+        } else {
+            nodes.push(node);
         }
-        nodes.push(node);
         this.setCustomNodes(nodes);
         return true;
     }
