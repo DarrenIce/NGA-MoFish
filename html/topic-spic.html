@@ -54,9 +54,10 @@
 
     <div class="topic-toolbar">
       <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.pageNow %>});" title="刷新页面">刷新页面</a>
-      <span class="text count">
+      <!-- <span class="text count">
         {{topic.likes}} 👍
-      </span>
+      </span> -->
+      <span><a class="thanks" href="javascript:;" onclick="vsPostMessage('like',  <%= {reply:'0', __topic: topic } %>);" title="赞同">👍 </a><span pid="0">{{ topic.likes }}</span></span>
     </div>
 
     <hr />
@@ -78,8 +79,9 @@
             <a class="user {{ topic.authorName === $value.userName ? 'user--author' : '' }}"
               href="/nuke.php?func=ucp&uid={{ $value.uid }}">{{ $value.userName }}</a>
             <span class="time">{{ $value.time }}</span>
-            <span class="thanks">👍 {{ $value.likes }}</span>
-            <span class="floor">{{ $value.floor }}</span>
+            <!-- <span class="thanks">👍 {{ $value.likes }}</span> -->
+            <span><a class="thanks" pid="{{ $value.pid }}" href="javascript:;" onclick="vsPostMessage('like',  <%= {reply:$value.pid, __topic: topic } %>);" title="赞同">👍 </a><span pid="{{ $value.pid }}">{{ $value.likes }}</span></span>
+        <span class="floor">{{ $value.floor }}</span>
           </div>
           {{ if $value.quote }}
           <div class="quote-url">
@@ -132,10 +134,23 @@
   </div>
 
   <script src="{{ contextPath }}/html/lib/js-yaml.min.js"></script>
+  <script src="{{ contextPath }}/html/topic-spic.js"></script>
   <script>
     var __topic = topic;
   </script>
-  <script src="{{ contextPath }}/html/topic-spic.js"></script>
+  <script>
+    window.addEventListener('message', event => {
+      const message = event.data; // The JSON data our extension sent
+      switch (message.command) {
+          case 'updateLikes':
+              console.log(message.reply);
+              document.querySelectorAll(`span[pid="${message.reply.pid}"]`).forEach((a) => {
+                a.innerText = message.reply.likes;
+              })
+              break;
+      }
+    });
+  </script>
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 </body>
 

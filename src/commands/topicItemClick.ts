@@ -5,6 +5,8 @@ import { NGA } from '../nga';
 import * as vscode from 'vscode';
 import Global from '../global';
 import * as path from 'path';
+import * as cheerio from "cheerio";
+import http from "../http";
 const yaml = require('js-yaml');
 
 /**
@@ -87,6 +89,8 @@ export default function topicItemClick(item: TreeNode) {
       case 'pageTurning':
         loadTopicInPanel(panel, item.link, message.page);
         break;
+      case 'like':
+        loadReplyLikes(panel, message.reply, topic, item.link);
       default:
         break;
     }
@@ -174,25 +178,18 @@ function loadTopicInPanel(panel: vscode.WebviewPanel, topicLink: string, page: n
   // 获取详情数据
   NGA.getTopicDetail(topicLink, false, page)
     .then((detail) => {
-      // try {
-      // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
       if (Global.context?.globalState.get('showSticker') === '1') {
         panel.webview.html = NGA.renderPage('topic-spic.html', {
           topic: detail,
-          // topicYml: yaml.safeDump(detail),
           contextPath: Global.getWebViewContextPath(panel.webview)
         });
       } else {
         panel.webview.html = NGA.renderPage('topic.html', {
           topic: detail,
-          // topicYml: yaml.safeDump(detail),
           contextPath: Global.getWebViewContextPath(panel.webview)
         });
       }
 
-      // } catch (err) {
-      //   console.log(err);
-      // }
     })
     .catch((err: Error) => {
       console.error(err);
@@ -236,4 +233,49 @@ function _openLargeImage(imageSrc: string) {
   panel.webview.html = NGA.renderPage('browseImage.html', {
     imageSrc: imageSrc
   });
+}
+
+/**
+ * 点赞 or 取消点赞
+ */
+async function loadReplyLikes(panel: vscode.WebviewPanel, detail: any, topic: TopicDetail, topicLink: string) {
+  const cookie = Global.getCookie();
+  if (!cookie) {
+    vscode.window.showErrorMessage("请先登录");
+    return false;
+  }
+  const pid = detail;
+  const tid = topic.id;
+  const r = await http.post(
+    `https://${Global.ngaURL}/nuke.php?__lib=topic_recommend&__act=add&tid=${tid}&pid=${pid}&value=1&raw=3&lite=js`,
+    { responseType: "arraybuffer" }
+  );
+  const t = r.data.replace('window.script_muti_get_var_store=', '');
+  const d = JSON.parse(t);
+  if(d.error) {
+    vscode.window.showErrorMessage(d.error[0]);
+    return false;
+  }
+  console.log(topic);
+  let c = d.data[1] || 0;
+    c = c > 0 ? c : 0;
+  const { replies } = topic;
+  const reply = replies.find((reply: TopicReply) => reply.pid === pid);
+  let likes = 0;
+  if (reply) {
+    likes = reply.likes + c;
+    panel.webview.postMessage({command: 'updateLikes', reply: {
+      pid,
+      likes
+    }});
+    // 闪烁
+    // loadTopicInPanel(panel, topicLink, page);
+  } else {
+    likes = topic.likes + c;
+    panel.webview.postMessage({command: 'updateLikes', reply: {
+      pid,
+      likes
+    }});
+  }
+  
 }
