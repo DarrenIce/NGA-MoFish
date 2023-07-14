@@ -6,7 +6,15 @@ import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
 import {processSmile} from './process/smile';
 import * as JSON5 from 'json5';
-
+import { Glob } from 'glob';
+import { Node } from './models/node';
+import { Topic } from './models/topic';
+import { Label, User } from './models/user';
+import { TopicDetail } from './models/topicDetail';
+import { Comment } from './models/comment';
+import { TopicReply } from './models/topicReply';
+import { SearchElement } from './models/searchElement';
+import * as vscode from 'vscode';
 
 
 export class NGA {
@@ -35,12 +43,12 @@ export class NGA {
             const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
             try {
                 let js = JSON.parse(res.data).data;
+                console.log(js);
                 let fid2name = new Map();
                 for (let f in js.__F.sub_forums) {
                     fid2name.set(f, js.__F.sub_forums[f]['1']);
                 }
                 fid2name.set(node.name, node.title);
-                // console.log(js)
                 
                 for (let val in js.__T) {
                     const topic = new Topic();
@@ -88,21 +96,48 @@ export class NGA {
         topicItemClick(node);
     }
 
-    static async getTopicDetail(topicLink: string, onlyAuthor: boolean, page: number): Promise<TopicDetail> {
+    static parseJson(data: string): any {
+        let r = data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments')
+                    .replace(/\[\/img\]/g, '\\">')
+                    .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"')
+                    .replace(/\[url\]/g, '<a href=\\"')
+                    .replace(/\[\/url\]/g, '\\">url</a>')
+                    .replace(/"signature":".*?",/g, '')
+                    .replace(/"alterinfo":".*?",/g, '');
+        if (Global.getStickerMode() === '0') {
+            r = r.replace(/<img.*?>/g, '[img]');
+        }
+        let js = JSON5.parse(r).data;
+        return js;
+    }
 
+    static async getTopicDetail(topicLink: string, onlyAuthor: boolean, page: number): Promise<TopicDetail> {
         const res = await http.get<string>(topicLink + '&page=1', { responseType: 'arraybuffer' });
         const topic = new TopicDetail();
         let range = 5;
 
+        const _getUserMap = (jsUsers: any): Map<any, any> => {
+            let globalUsers = Global.getUserLabel();
+            let userMap = NGA.userArray2Map(globalUsers);
+            console.log('before userMap.values(): ', Array.from(userMap.values()));
+            for (let val in jsUsers) {
+                if (userMap.has(val)) {
+                    continue;
+                }
+                let u = new User();
+                u.uid = '' + jsUsers[val]?.uid;
+                u.userNmae = jsUsers[val]?.username;
+                u.regDate = jsUsers[val]?.regdate;
+                u.labels = [];
+                userMap.set(val, u);
+            }
+            console.log('after userMap.values(): ', Array.from(userMap.values()));
+            return userMap;
+        };
+
         topic.onlyAuthor = onlyAuthor;
         topic.pageNow = page;
-        let j = res.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
-        if (Global.getStickerMode() === '0') {
-            j = j.replace(/<img.*?>/g, '[img]');
-        }
-        // console.log(j);
-        let js = JSON5.parse(j).data;
-        // console.log(JSON5.stringify(js));
+        let js = NGA.parseJson(res.data);
         topic.id = parseInt(js.__T.tid);
         Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
@@ -112,8 +147,8 @@ export class NGA {
             title: js.__F.name || ''
         };
 
-        topic.authorID = js.__R['0'].authorid;
-        topic.authorName = js.__U[topic.authorID].username;
+        topic.user.uid = js.__R['0'].authorid;
+        topic.user.userNmae = js.__U[topic.user.uid].username;
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';
         topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
@@ -124,14 +159,7 @@ export class NGA {
         topic.pages = Math.ceil(topic.replyCount / (range * 20));
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
-            let users = new Map();
-            for (let val in js.__U) {
-                let u = new User();
-                u.uid = '' + js.__U[val]?.uid;
-                u.userNmae = js.__U[val]?.username;
-                u.regDate = js.__U[val]?.regdate;
-                users.set(val, u);
-            }
+            let users = _getUserMap(js.__U);
             for (let c in js.__R['0'].comment) {
                 let com = new Comment();
                 com.authorID = js.__R['0'].comment[c].authorid;
@@ -152,32 +180,19 @@ export class NGA {
                 topic.needTurn = true;
                 // console.log(topicLink + '&page=' + i);
                 const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                // let j = rs.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-                let j = rs.data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '').replace(/"alterinfo":".*?",/g, '');
-                // console.log(j);
-                if (Global.getStickerMode() === '0') {
-                    j = j.replace(/<img.*?>/g, '[img]');
-                }
-                // console.log(j);
-                let js = JSON5.parse(j).data;
+                let js = NGA.parseJson(rs.data);
                 if (js.__PAGE !== i) {
                     topic.needTurn = false;
                     break;
                 }
 
-                let users = new Map();
-                for (let val in js.__U) {
-                    let u = new User();
-                    u.uid = '' + js.__U[val]?.uid;
-                    u.userNmae = js.__U[val]?.username;
-                    u.regDate = js.__U[val]?.regdate;
-                    users.set(val, u);
-                }
+                let users =_getUserMap(js.__U);
                 for (let j = i === 1 ? 1 : 0; j < js.__R__ROWS; j++) {
                     let rep = new TopicReply();
                     rep.pid = '' + js.__R[j].pid;
-                    rep.uid = '' + js.__R[j].authorid;
-                    rep.userName = users.has(rep.uid) ? users.get(rep.uid).userNmae : rep.uid;
+                    rep.user.uid = '' + js.__R[j].authorid;
+                    rep.user.userNmae = users.has(rep.user.uid) ? users.get(rep.user.uid).userNmae : rep.user.uid;
+                    rep.user.labels = users.has(rep.user.uid) ? users.get(rep.user.uid).labels : [];
                     rep.time = js.__R[j].postdate;
                     rep.floor = js.__R[j].lou;
                     rep.content = js.__R[j].hasOwnProperty('content') ? ""+js.__R[j].content : ""+js.__R[j].subject;
@@ -236,8 +251,7 @@ export class NGA {
         if (page == topic.pages) {
             topic.needTurn = false;
         }
-        // console.log(topic.replies)
-        // console.log(topic);
+        console.log('getTopicDetail topic: ', topic);
         return topic;
     }
 
@@ -297,97 +311,63 @@ export class NGA {
         return se;
     }
 
+    static addLabel(panel: vscode.WebviewPanel, user: User, label: string) {
+        let globalUsers = Global.getUserLabel();
+        console.log('globalUsers: ', globalUsers);
+        console.log('typeof globalUsers: ', typeof globalUsers);
+        let userMap = NGA.userArray2Map(globalUsers);
+        user = userMap.has(user.uid) ? userMap.get(user.uid) : user;
+        let newLabel = new Label();
+        newLabel.class = (user.labels.length % 5 + 1).toString();
+        newLabel.content = label;
+        user.labels.push(newLabel);
+        console.log('user: ', user);
+        userMap.set(user.uid, user);
+        console.log('userMap: ', Array.from(userMap.values()));
+        Global.updateUserLabel(Array.from(userMap.values()));
+        panel.webview.postMessage({command: 'addLabel', reply: {
+            user,
+          }});
+    }
+
+    static delLabel(panel: vscode.WebviewPanel, user: User, label: string) {
+        let globalUsers = Global.getUserLabel();
+        console.log('globalUsers: ', globalUsers);
+        console.log('typeof globalUsers: ', typeof globalUsers);
+        let userMap = NGA.userArray2Map(globalUsers);
+        user = userMap.has(user.uid) ? userMap.get(user.uid) : user;
+        let index = -1;
+        for (let i in user.labels) {
+            if (user.labels[i].content === label) {
+                index = parseInt(i, 10);
+                break;
+            }
+        }
+        if (index !== -1) {
+            user.labels.splice(index, 1);
+        }
+        for (let i in user.labels) {
+            user.labels[i].class = (parseInt(i) % 5 + 1).toString();
+        }
+        console.log('user: ', user);
+        userMap.set(user.uid, user);
+        console.log('userMap: ', Array.from(userMap.values()));
+        Global.updateUserLabel(Array.from(userMap.values()));
+        panel.webview.postMessage({command: 'addLabel', reply: {
+            user,
+          }});
+    }
+
     static stillTwo(num: number): string {
         return ("0" + num).substr(-2);
     }
-}
 
-export class Node {
-    // 节点fid
-    public name: string = '';
-    // 节点标题（显示的名称）
-    public title: string = '';
-}
-
-export class Topic {
-    // 标题
-    public title: string = '';
-    // 链接
-    public link: string = '';
-    // 节点
-    public node: Node = { title: '', name: '' };
-}
-
-export class TopicDetail {
-    // id
-    public id: number = 0;
-    // 链接
-    public link: string = '';
-    // 标题
-    public title: string = '';
-    // 节点
-    public node: Node = { title: '', name: '' };
-    public authorID: string = '';
-    // 作者名字
-    public authorName: string = '';
-    // 时间
-    public displayTime: string = '';
-    // 内容
-    public content: string = '';
-    // 点赞数
-    public likes: number = 0;
-    // 回复总条数
-    public replyCount: number = 0;
-    // 回复
-    public replies: TopicReply[] = [];
-    public comments: Comment[] = [];
-    // 只看楼主
-    public onlyAuthor: boolean = false;
-    // 传递页码
-    public pageNow: number = 0;
-    // 是否需要翻页
-    public needTurn: boolean = false;
-    // 页码数
-    public pages: number = 0;
-}
-
-export class TopicReply {
-    public pid: string = '';
-    public uid: string = '';
-    // 用户名
-    public userName: string = '';
-    // 回复时间
-    public time: string = '';
-    // 楼层
-    public floor: string = '';
-    // 回复内容
-    public content: string = '';
-    // 点赞数
-    public likes: number = 0;
-    public quote: string = '';
-    public quoteuid: string = '';
-    public quoteuname: string = '';
-    public comments: Comment[] = [];
-}
-
-export class User {
-    public uid: string = '';
-    public userNmae: string = '';
-    public regDate: string = '';
-}
-
-export class Comment {
-    public authorID: string = '';
-    public authorName: string = '';
-    public time: string = '';
-    public content: string = '';
-}
-
-export class SearchElement {
-    public id: number = 0;
-    public authorID: string = '';
-    public authorName: string = '';
-    public title: string = '';
-    public postdate: string = '';
-    public replies: number = 0;
+    static userArray2Map(users: any[]): Map<any, any> {
+        console.log('userArray2Map users: ', users);
+        let userMap = new Map();
+        for (let user in users) {
+            userMap.set(users[user]['uid'], users[user]);
+        }
+        return userMap;
+    }
 }

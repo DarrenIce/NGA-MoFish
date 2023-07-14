@@ -1,8 +1,9 @@
 import { TreeNode } from './../providers/BaseProvider';
-import { NGA, SearchElement } from './../nga';
+import { NGA } from './../nga';
 import * as vscode from 'vscode';
 import topicItemClick from './topicItemClick';
 import Global from '../global';
+import { SearchElement } from '../models/searchElement';
 
 /**上次的搜索结果 */
 var _lastSearchList: SearchElement[] | undefined = undefined;

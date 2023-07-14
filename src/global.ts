@@ -1,6 +1,6 @@
 import { ExtensionContext, Webview, Uri } from 'vscode';
-import { Node } from './nga';
 import * as iconvlite from 'iconv-lite';
+import { Node } from './models/node';
 
 export default class Global {
     static ngaURL = 'bbs.nga.cn';
@@ -101,5 +101,13 @@ export default class Global {
 
     static setFilterRead(mode: boolean) {
         this.context?.globalState.update('filterRead', mode);
+    }
+
+    static updateUserLabel(users: any[]) {
+        this.context?.globalState.update('users1', users);
+    }
+
+    static getUserLabel(): any[] {
+        return this.context?.globalState.get<any[]>('users1') || [];
     }
 }

@@ -111,3 +111,50 @@ function AutoResizeImage(maxWidth, maxHeight, objImg) {
   objImg.height = h;
   objImg.width = w;
 }
+
+window.addEventListener('message', event => {
+  const message = event.data; // The JSON data our extension sent
+  switch (message.command) {
+      case 'updateLikes':
+          console.log('js updateLikes: ', message.reply);
+          document.querySelectorAll(`span[pid="${message.reply.pid}"]`).forEach((a) => {
+            a.innerText = message.reply.likes;
+          })
+          break;
+      case 'delLabel':
+      case 'addLabel':
+          console.log('js processLabel: ', message.reply);
+          document.querySelectorAll(`span[replyuid="${message.reply.user.uid}"]`).forEach((a) => {
+            console.log('processLabel innerText: ', a.innerText);
+            console.log('processLabel innerHTML: ', a.innerHTML);
+            let inner = '';
+            for (let i in message.reply.user.labels) {
+              inner += `<span class="label${message.reply.user.labels[i]['class']}" onclick="vsPostMessage('delLabel', {user:${escapeHTML(JSON.stringify(message.reply.user))}, label:${message.reply.user.labels[i]['content']}, __topic: ${escapeHTML(JSON.stringify(topic))} });">${message.reply.user.labels[i]['content']}</span>`;
+            }
+            console.log('processLabel inner: ', inner);
+            a.innerHTML = inner;
+          })
+          break;
+  }
+});
+
+function HTMLEncode(html) {
+  var temp = document.createElement("div");
+  (temp.textContent != null) ? (temp.textContent = html) : (temp.innerText = html);
+  var output = temp.innerHTML;
+  temp = null;
+  return output;
+}
+
+function HTMLDecode(text) { 
+  var temp = document.createElement("div"); 
+  temp.innerHTML = text; 
+  var output = temp.innerText || temp.textContent; 
+  temp = null; 
+  return output; 
+} 
+
+function escapeHTML(text) {
+  text = "" + text;
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");;
+}

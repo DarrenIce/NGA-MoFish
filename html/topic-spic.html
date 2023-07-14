@@ -21,8 +21,8 @@
     <!-- 作者、时间 -->
     <div class="topic-meta">
       <a class="node" href="/thread.php?fid={{ topic.node.name }}">{{ topic.node.title }}</a>
-      <a class="user text-bold" href="/nuke.php?func=ucp&uid={{ topic.authorID }}">{{ topic.authorName }}</a>
-      <span class="time"> {{ topic.displayTime }} </span>
+      <a class="user text-bold" href="/nuke.php?func=ucp&uid={{ topic.user.uid }}">{{ topic.user.userNmae }}</a>
+      <span class="time"> {{topic.displayTime}} </span>
       {{if topic.onlyAuthor}}
       <a id="cancelOnlyAuthor" class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('cancelOnlyAuthor');" title="取消只看楼主">取消只看楼主</a>
       {{else}}
@@ -38,18 +38,18 @@
     <div class="topic-content">正文无内容</div>
     {{/if}}
 
-    {{ if topic.comments.length }}
+    {{if topic.comments.length}}
     <hr />
     <p>贴条</p>
     <div class="comments">
-      {{ each topic.comments }}
+      {{each topic.comments}}
       <div class="comments-detail">
         {{$value.authorName}}：{{@ $value.content}}
       </div>
       <br />
-      {{ /each }}
+      {{/each}}
     </div>
-    {{ /if }}
+    {{/if}}
 
 
     <div class="topic-toolbar">
@@ -65,7 +65,7 @@
     <!-- 评论 -->
     <div class="reply">
       {{if topic.replies.length}}
-      <h2>共 {{ topic.replyCount }} 条回复</h2>
+      <h2>共 {{topic.replyCount}} 条回复</h2>
       {{else}}
       <h2>暂无回复</h2>
       {{/if}}
@@ -76,39 +76,49 @@
         <!-- <img class="avatar" src="{{$value.userAvatar}}" alt="" /> -->
         <div class="reply-item-wrap">
           <div class="meta">
-            <a class="user {{ topic.authorName === $value.userName ? 'user--author' : '' }}"
-              href="/nuke.php?func=ucp&uid={{ $value.uid }}">{{ $value.userName }}</a>
-            <span class="time">{{ $value.time }}</span>
+            <span>
+              <a class="user {{ topic.user.userNmae === $value.user.userNmae ? 'user--author' : '' }} {{$value.user.uid}}" uid="{{$value.user.uid}}"
+              onclick="vsPostMessage('addLabel',  {{ {user:$value.user, __topic: topic } }} );">{{$value.user.userNmae}}</a>
+              <span replyuid="{{$value.user.uid}}">
+                {{set temp = $value.user}}
+                {{if $value.user.labels.length}}
+                  {{each $value.user.labels}}
+                  <span class="label{{ $value.class }}" onclick="vsPostMessage('delLabel', {{ {user:temp, label:$value.content, __topic: topic } }});">{{$value.content}}</span>
+                  {{/each}}
+                {{/if}}
+              </span>
+            </span>
+            <span class="time">{{$value.time}}</span>
+            <span><a class="thanks" pid="{{ $value.pid }}" href="javascript:;" onclick="vsPostMessage('like',  <%= {reply:$value.pid, __topic: topic } %>);" title="赞同">👍 </a><span pid="{{ $value.pid }}">{{$value.likes}}</span></span>
             <!-- <span class="thanks">👍 {{ $value.likes }}</span> -->
-            <span><a class="thanks" pid="{{ $value.pid }}" href="javascript:;" onclick="vsPostMessage('like',  <%= {reply:$value.pid, __topic: topic } %>);" title="赞同">👍 </a><span pid="{{ $value.pid }}">{{ $value.likes }}</span></span>
-        <span class="floor">{{ $value.floor }}</span>
+            <span class="floor">{{$value.floor}}</span>
           </div>
-          {{ if $value.quote }}
+          {{if $value.quote}}
           <div class="quote-url">
-            <a href="/nuke.php?func=ucp&uid={{ $value.quoteuid }}">{{ $value.quoteuname }}</a>
+            <a href="/nuke.php?func=ucp&uid={{ $value.quoteuid }}">{{$value.quoteuname}}</a>
           </div>
           <blockquote>
-            {{@ $value.quote }}
+            {{@ $value.quote}}
           </blockquote>
-          {{ /if }}
+          {{/if}}
           <div class="topic-content">{{@ $value.content}}</div>
-          {{ if $value.comments.length }}
+          {{if $value.comments.length}}
           <hr />
           <p>贴条</p>
           <div class="comments">
-            {{ each $value.comments }}
+            {{each $value.comments}}
             <div class="comments-detail">
-              {{ $value.authorName }}：{{@ $value.content }}
+              {{$value.authorName}}：{{@ $value.content}}
             </div>
-            {{ /each }}
+            {{/each}}
           </div>
-          {{ /if }}
+          {{/if}}
         </div>
       </div>
       <hr />
       {{/each}}
     </div>
-    
+
     {{if !topic.onlyAuthor && topic.needTurn}}
       {{if topic.pageNow > 1}}
       <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow-1 %>});" title="上一页">上一页</a>
@@ -118,7 +128,7 @@
       {{/if}}
       <hr />
     {{/if}}
-
+    
     {{if !topic.onlyAuthor}}
     <div class="pages">
     <% for(var i = 1; i <= topic.pages; i++){ %>
@@ -137,19 +147,6 @@
   <script src="{{ contextPath }}/html/topic-spic.js"></script>
   <script>
     var __topic = topic;
-  </script>
-  <script>
-    window.addEventListener('message', event => {
-      const message = event.data; // The JSON data our extension sent
-      switch (message.command) {
-          case 'updateLikes':
-              console.log(message.reply);
-              document.querySelectorAll(`span[pid="${message.reply.pid}"]`).forEach((a) => {
-                a.innerText = message.reply.likes;
-              })
-              break;
-      }
-    });
   </script>
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 </body>

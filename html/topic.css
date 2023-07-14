@@ -271,3 +271,48 @@ blockquote p {
 	padding:8px;
 	margin:10px;
 }
+
+.label1 {
+  border-radius: 0.25em;
+  padding: 0 0.4em 0.05em 0.4em;
+  display: inline-block;
+  background: #315635;
+  color: #fff;
+  margin: 0.1em 0.2em;
+}
+
+.label2 {
+  border-radius: 0.25em;
+  padding: 0 0.4em 0.05em 0.4em;
+  display: inline-block;
+  background: #782773;
+  color: #fff;
+  margin: 0.1em 0.2em;
+}
+
+.label3 {
+  border-radius: 0.25em;
+  padding: 0 0.4em 0.05em 0.4em;
+  display: inline-block;
+  background: #8a242d;
+  color: #fff;
+  margin: 0.1em 0.2em;
+}
+
+.label4 {
+  border-radius: 0.25em;
+  padding: 0 0.4em 0.05em 0.4em;
+  display: inline-block;
+  background: #b79f80;
+  color: #fff;
+  margin: 0.1em 0.2em;
+}
+
+.label5 {
+  border-radius: 0.25em;
+  padding: 0 0.4em 0.05em 0.4em;
+  display: inline-block;
+  background: #4d50b8;
+  color: #fff;
+  margin: 0.1em 0.2em;
+}

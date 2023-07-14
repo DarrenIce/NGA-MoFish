@@ -1,4 +1,3 @@
-import { TopicDetail, TopicReply } from './../nga';
 import { TreeNode } from '../providers/BaseProvider';
 import { LoginRequiredError, AccountRestrictedError } from './../error';
 import { NGA } from '../nga';
@@ -7,6 +6,8 @@ import Global from '../global';
 import * as path from 'path';
 import * as cheerio from "cheerio";
 import http from "../http";
+import { TopicDetail } from '../models/topicDetail';
+import { TopicReply } from '../models/topicReply';
 const yaml = require('js-yaml');
 
 /**
@@ -91,6 +92,13 @@ export default function topicItemClick(item: TreeNode) {
         break;
       case 'like':
         loadReplyLikes(panel, message.reply, topic, item.link);
+        break;
+      case 'addLabel':
+        vscode.commands.executeCommand('nga.addLabel', panel, message.user);
+        break;
+      case 'delLabel':
+        NGA.delLabel(panel, message.user, message.label);
+        break;
       default:
         break;
     }
@@ -115,8 +123,8 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
       // try {
       // 在panel被关闭后设置html，会出现'Webview is disposed'异常，暂时简单粗暴地解决一下
       var onlyAuthorArr: TopicReply[] = [];
-      detail.replies.forEach(reply => {
-          if(reply.userName == detail.authorName){
+      detail.replies.forEach((reply: TopicReply) => {
+          if(reply.user.userNmae == detail.user.userNmae){
             onlyAuthorArr.push(reply);
           }
       });

@@ -13,6 +13,7 @@ import Global from './global';
 import { NGA } from './nga';
 import search from './commands/search';
 import { parse } from 'path';
+import { User } from './models/user';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -138,6 +139,18 @@ export function activate(context: vscode.ExtensionContext) {
 		isAdd && customProvider.refreshNodeList();
 	});
 
+	let cDisposable13 = vscode.commands.registerCommand('nga.addLabel', async (panel: vscode.WebviewPanel, user: User) => {
+		let label = await vscode.window.showInputBox({
+			placeHolder: '标签',
+			prompt: '在这里输入对此人的标签'
+		});
+		// 如果用户撤销输入，如ESC，则为undefined
+		if (label === undefined) {
+			return;
+		}
+		NGA.addLabel(panel, user, label);
+	});
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -156,6 +169,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable10,
 		cDisposable11,
 		cDisposable12,
+		cDisposable13,
 	);
 }
 

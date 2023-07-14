@@ -99,6 +99,10 @@
 			{
 				"command": "nga.setRead",
 				"title": "标为已读"
+			},
+			{
+				"command": "nga.addLabel",
+				"title": "添加标签"
 			}
 		],
 		"viewsContainers": {
