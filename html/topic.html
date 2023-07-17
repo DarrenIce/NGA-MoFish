@@ -21,7 +21,17 @@
     <!-- 作者、时间 -->
     <div class="topic-meta">
       <a class="node" href="/thread.php?fid={{ topic.node.name }}">{{ topic.node.title }}</a>
-      <a class="user text-bold" href="/nuke.php?func=ucp&uid={{ topic.user.uid }}">{{ topic.user.userNmae }}</a>
+      <span>
+        <a class="user text-bold" onclick="vsPostMessage('addLabel',  {{ {user:topic.user, __topic: topic } }} );">{{ topic.user.userNmae }}</a>
+        <span replyuid="{{topic.user.uid}}">
+          {{set temp = topic.user}}
+          {{if topic.user.labels.length}}
+            {{each topic.user.labels}}
+            <span class="label{{ $value.class }}" onclick="vsPostMessage('delLabel', {{ {user:temp, label:$value.content, __topic: topic } }});">{{$value.content}}</span>
+            {{/each}}
+          {{/if}}
+        </span>
+      </span>
       <span class="time"> {{topic.displayTime}} </span>
       {{if topic.onlyAuthor}}
       <a id="cancelOnlyAuthor" class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('cancelOnlyAuthor');" title="取消只看楼主">取消只看楼主</a>

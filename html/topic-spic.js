@@ -149,7 +149,7 @@ window.addEventListener('message', event => {
             console.log('processLabel innerHTML: ', a.innerHTML);
             let inner = '';
             for (let i in message.reply.user.labels) {
-              inner += `<span class="label${message.reply.user.labels[i]['class']}" onclick="vsPostMessage('delLabel', {user:${escapeHTML(JSON.stringify(message.reply.user))}, label:${message.reply.user.labels[i]['content']}, __topic: ${escapeHTML(JSON.stringify(topic))} });">${message.reply.user.labels[i]['content']}</span>`;
+              inner += `<span class="label${message.reply.user.labels[i]['class']}" onclick="vsPostMessage('delLabel', {&quot;user&quot;:${escapeHTML(JSON.stringify(message.reply.user))}, &quot;label&quot;:${escapeHTML(JSON.stringify(message.reply.user.labels[i]['content']))}, &quot;__topic&quot;: ${escapeHTML(JSON.stringify(__topic))} });">${message.reply.user.labels[i]['content']}</span>`;
             }
             console.log('processLabel inner: ', inner);
             a.innerHTML = inner;
