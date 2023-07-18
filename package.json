@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.6.0",
+	"version": "1.6.1",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -73,6 +73,11 @@
 				"icon": "$(refresh)"
 			},
 			{
+				"command": "nga-collection.refreshNode",
+				"title": "刷新收藏夹",
+				"icon": "$(refresh)"
+			},
+			{
 				"command": "nga-custom.removeNode",
 				"title": "删除节点"
 			},
@@ -119,6 +124,10 @@
 				{
 					"id": "nga-custom",
 					"name": "节点"
+				},
+				{
+					"id": "nga-collection",
+					"name": "收藏列表"
 				}
 			]
 		},
@@ -189,6 +198,11 @@
 					"group": "inline"
 				},
 				{
+					"command": "nga-collection.refreshNode",
+					"when": "view == nga-collection && viewItem == dir",
+					"group": "inline"
+				},
+				{
 					"command": "nga-custom.removeNode",
 					"when": "view == nga-custom && viewItem == dir"
 				},
@@ -228,8 +242,12 @@
 		"axios": "^0.21.1",
 		"cheerio": "^1.0.0-rc.10",
 		"encoding": "^0.1.13",
-		"iconv-lite": "^0.6.2",
+		"form-data": "^4.0.0",
+		"iconv-lite": "^0.6.3",
 		"js-yaml": "^3.14.0",
-		"json5": "^2.2.1"
+		"jschardet": "^3.0.0",
+		"json5": "^2.2.1",
+		"qs": "^6.11.2",
+		"request": "^2.88.2"
 	}
 }

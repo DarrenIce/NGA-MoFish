@@ -147,7 +147,7 @@ export class NGA {
             title: js.__F.name || ''
         };
 
-        topic.user.uid = js.__R['0'].authorid;
+        topic.user.uid = '' + js.__R['0'].authorid;
         topic.user.userNmae = js.__U[topic.user.uid].username;
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = js.__R['0'].content || '';

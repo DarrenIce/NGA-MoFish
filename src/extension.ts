@@ -6,7 +6,7 @@ import { TreeNode } from './providers/BaseProvider';
 import topicItemClick from './commands/topicItemClick';
 import CustomProvider from './providers/CustomProvider';
 import addNode from './commands/addNode';
-import syncCollect from './commands/syncCollect';
+import {syncCollectNodes} from './commands/syncCollect';
 import removeNode from './commands/removeNode';
 import { EOL } from 'os';
 import Global from './global';
@@ -14,6 +14,7 @@ import { NGA } from './nga';
 import search from './commands/search';
 import { parse } from 'path';
 import { User } from './models/user';
+import CollectProvider from './providers/CollectProvider';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -25,8 +26,15 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "nga-mofish" is now active!');
 
 	const customProvider = new CustomProvider();
+	const collectProvider = new CollectProvider();
+
 	vscode.window.createTreeView('nga-custom', {
 		treeDataProvider: customProvider,
+		showCollapseAll: true
+	});
+
+	vscode.window.createTreeView('nga-collection', {
+		treeDataProvider: collectProvider,
 		showCollapseAll: true
 	});
 
@@ -135,7 +143,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 自定义视图事件：同步收藏版块
 	let cDisposable12 = vscode.commands.registerCommand('nga-custom.syncCollect', async () => {
-		const isAdd = await syncCollect();
+		const isAdd = await syncCollectNodes();
 		isAdd && customProvider.refreshNodeList();
 	});
 
@@ -150,6 +158,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		NGA.addLabel(panel, user, label);
 	});
+
+	let cDisposable14 = vscode.commands.registerCommand('nga-collection.refreshNode', (root: TreeNode) => collectProvider.refreshRoot(root));
 
 	context.subscriptions.push(
 		testDisposable,
@@ -170,6 +180,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable11,
 		cDisposable12,
 		cDisposable13,
+		cDisposable14,
 	);
 }
 

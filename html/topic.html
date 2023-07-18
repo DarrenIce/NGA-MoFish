@@ -33,11 +33,17 @@
         </span>
       </span>
       <span class="time"> {{topic.displayTime}} </span>
-      {{if topic.onlyAuthor}}
-      <a id="cancelOnlyAuthor" class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('cancelOnlyAuthor');" title="取消只看楼主">取消只看楼主</a>
-      {{else}}
-      <a id="onlyAuthor"  class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('onlyAuthor');" title="只看楼主">只看楼主</a>
-      {{/if}}
+      <span>
+        {{if topic.onlyAuthor}}
+          <a id="cancelOnlyAuthor" class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('cancelOnlyAuthor');" title="取消只看楼主">取消只看楼主</a>
+        {{else}}
+          <a id="onlyAuthor"  class="onlyAuthor" href="javascript:;" onclick="vsPostMessage('onlyAuthor');" title="只看楼主">只看楼主</a>
+        {{/if}}
+      </span>
+      <span> </span>
+      <span style="margin-left: 10px">
+        <a id="collect"  class="collect" href="javascript:;" onclick="vsPostMessage('collect', {{ {__topic: topic } }});" title="收藏帖子">收藏帖子</a>
+      </span>
     </div>
     <hr />
 
