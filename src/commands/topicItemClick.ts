@@ -274,7 +274,7 @@ async function loadReplyLikes(
   const pid = detail;
   const tid = topic.id;
   const r = await http.post(
-    `https://${Global.ngaURL}/nuke.php?__lib=topic_recommend&__act=add&tid=${tid}&pid=${pid}&value=1&raw=3&lite=js`,
+    `https://${Global.getNgaDomain()}/nuke.php?__lib=topic_recommend&__act=add&tid=${tid}&pid=${pid}&value=1&raw=3&lite=js`,
     { responseType: "arraybuffer" }
   );
   const t = r.data.replace("window.script_muti_get_var_store=", "");
@@ -318,7 +318,7 @@ async function collectPost(panel: vscode.WebviewPanel, topic: TopicDetail,) {
   let collectors: any[] = [];
   await axios
     .post(
-      `https://${Global.ngaURL}/nuke.php?__lib=topic_favor_v2&__act=list_folder`,
+      `https://${Global.getNgaDomain()}/nuke.php?__lib=topic_favor_v2&__act=list_folder`,
       qs.stringify({
         __output: "1",
         __inchst: "UTF8",
@@ -361,7 +361,7 @@ async function collectPost(panel: vscode.WebviewPanel, topic: TopicDetail,) {
   console.log(topic);
   await axios
     .post(
-      `https://${Global.ngaURL}/nuke.php?__lib=topic_favor_v2&__act=add&__output=3&lite=js`,
+      `https://${Global.getNgaDomain()}/nuke.php?__lib=topic_favor_v2&__act=add&__output=3&lite=js`,
       qs.stringify({
         __output: "1",
         __inchst: "UTF8",

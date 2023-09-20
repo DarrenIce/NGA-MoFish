@@ -18,7 +18,7 @@ async function syncCollectNodes(): Promise<boolean> {
     vscode.window.showErrorMessage("请先登录");
     return false;
   }
-  const r = await http.get(`https://${Global.ngaURL}/nuke.php?__lib=forum_favor2&__act=forum_favor&__output=3&action=get`,{ responseType: "arraybuffer" });
+  const r = await http.get(`https://${Global.getNgaDomain()}/nuke.php?__lib=forum_favor2&__act=forum_favor&__output=3&action=get`,{ responseType: "arraybuffer" });
   const $ = cheerio.load(r.data);
   const t = $("script").text().substring($("script").text().indexOf("=") + 1);
   const d = JSON.parse(t);
@@ -66,7 +66,7 @@ async function syncCollectPosts(): Promise<Topic[]> {
   }
   let list: Topic[] = [];
   for (let i = 1; i < 100; i++) {
-    const r = await http.get(`https://${Global.ngaURL}/thread.php?favor=1&order_by=postdatedesc&lite=js&noprefix&page=${i}`,{ responseType: "arraybuffer" });
+    const r = await http.get(`https://${Global.getNgaDomain()}/thread.php?favor=1&order_by=postdatedesc&lite=js&noprefix&page=${i}`,{ responseType: "arraybuffer" });
     const d = JSON.parse(r.data);
     console.log(d);
     if(d.error) {
@@ -76,7 +76,7 @@ async function syncCollectPosts(): Promise<Topic[]> {
       let topic = new Topic();
       let tmp = d.data.__T[i];
       topic.title = tmp.subject;
-      topic.link = `https://${Global.ngaURL}${tmp.tpcurl}&lite=js&noprefix`;
+      topic.link = `https://${Global.getNgaDomain()}${tmp.tpcurl}&lite=js&noprefix`;
       topic.node = new Node();
       topic.node.name = '0';
       topic.node.title = '收藏夹';

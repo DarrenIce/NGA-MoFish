@@ -71,6 +71,6 @@ async function showQuickPick(searchList: SearchElement[]) {
     return;
   }
   const node = new TreeNode(select.title, false);
-  node.link = `https://${Global.ngaURL}/read.php?lite=js&noprefix&tid=${select.topicId}`;
+  node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${select.topicId}`;
   topicItemClick(node);
 }

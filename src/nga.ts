@@ -23,7 +23,7 @@ export class NGA {
         if (!cookie) {
             return false;
         }
-        const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=479`, {
+        const res = await http.get(`https://${Global.getNgaDomain()}/thread.php?fid=479`, {
             headers: {
                 Cookie: cookie
             },
@@ -33,14 +33,14 @@ export class NGA {
     }
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
-        console.log(Global.ngaURL);
+        console.log(Global.getNgaDomain());
         let maxnum = Global.getPostNum();
-        console.log(`https://${Global.ngaURL}/thread.php?${node.name}&lite=js&page=1&noprefix`);
+        console.log(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=1&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://${Global.ngaURL}/thread.php?${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
+            const res = await http.get(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
             try {
                 let js = JSON.parse(res.data).data;
                 console.log(js);
@@ -69,7 +69,7 @@ export class NGA {
                             topic.title = `(已读)` + topic.title;
                         }
                     }
-                    topic.link = `https://${Global.ngaURL}${t.tpcurl}&lite=js&noprefix`;
+                    topic.link = `https://${Global.getNgaDomain()}${t.tpcurl}&lite=js&noprefix`;
                     topic.node = node;
                     list.push(topic);
                     tids.push(tid);
@@ -87,12 +87,12 @@ export class NGA {
     }
 
     static async getTopicByTid(tid: string) {
-        const res = await http.get(`https://${Global.ngaURL}/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
+        const res = await http.get(`https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
         let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
         // console.log(j);
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
-        node.link = `https://${Global.ngaURL}/read.php?lite=js&noprefix&tid=${tid}`;
+        node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${tid}`;
         topicItemClick(node);
     }
 
@@ -272,8 +272,8 @@ export class NGA {
         let pass = 0;
         let count = 0;
         for (let i =1; i <= 1000; i++) {
-            console.log(`https://${Global.ngaURL}/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
-            const res = await http.get<string>(encodeURI(`https://${Global.ngaURL}/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
+            console.log(`https://${Global.getNgaDomain()}/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
+            const res = await http.get<string>(encodeURI(`https://${Global.getNgaDomain()}/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
                 headers: {
                     Cookie: Global.getCookie()
                 },

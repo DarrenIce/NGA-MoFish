@@ -20,8 +20,8 @@ export default async function addNode(): Promise<boolean> {
     fid = `fid=${fid}`;
   }
   console.log('添加的分区fid', fid);
-  console.log(`https://${Global.ngaURL}/thread.php?${fid}`);
-  const r = await http.get(`https://${Global.ngaURL}/thread.php?${fid}`, { responseType: 'arraybuffer' });
+  console.log(`https://${Global.getNgaDomain()}/thread.php?${fid}`);
+  const r = await http.get(`https://${Global.getNgaDomain()}/thread.php?${fid}`, { responseType: 'arraybuffer' });
   const $ = cheerio.load(r.data);
   const t = $('head title').text().replace(' NGA玩家社区', '');
   console.log('添加的分区title', t);

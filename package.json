@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.6.2",
+	"version": "1.7.0",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -82,21 +82,6 @@
 				"title": "删除节点"
 			},
 			{
-				"command": "nga.showSticker",
-				"title": "选择图片模式",
-				"icon": "$(eye)"
-			},
-			{
-				"command": "nga.setPostNum",
-				"title": "显示的帖子数量",
-				"icon": "$(output)"
-			},
-			{
-				"command": "nga.filterRead",
-				"title": "过滤已读帖子",
-				"icon": "$(filter)"
-			},
-			{
 				"command": "nga.search",
 				"title": "搜索",
 				"icon": "$(search)"
@@ -108,6 +93,11 @@
 			{
 				"command": "nga.addLabel",
 				"title": "添加标签"
+			},
+			{
+				"command": "nga.settings",
+				"title": "设置",
+				"icon": "$(gear)"
 			}
 		],
 		"viewsContainers": {
@@ -154,19 +144,9 @@
 					"group": "navigation@3"
 				},
 				{
-					"command": "nga.showSticker",
+					"command": "nga.settings",
 					"when": "view == nga-custom",
 					"group": "navigation@4"
-				},
-				{
-					"command": "nga.setPostNum",
-					"when": "view == nga-custom",
-					"group": "navigation@5"
-				},
-				{
-					"command": "nga.filterRead",
-					"when": "view == nga-custom",
-					"group": "navigation@6"
 				},
 				{
 					"command": "nga.search",
@@ -177,7 +157,7 @@
 					"command": "nga-custom.syncCollect",
 					"when": "view == nga-custom",
 					"group": "navigation@8"
-				}
+				}				
 			],
 			"view/item/context": [
 				{

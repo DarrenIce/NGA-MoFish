@@ -15,6 +15,7 @@ import search from './commands/search';
 import { parse } from 'path';
 import { User } from './models/user';
 import CollectProvider from './providers/CollectProvider';
+import setting from './commands/setting';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -96,46 +97,6 @@ export function activate(context: vscode.ExtensionContext) {
 		customProvider.refreshNodeList();
 	});
 
-	// 公共事件：选择图片模式
-	let cDisposable7 = vscode.commands.registerCommand('nga.showSticker', async() => {
-		let bool = await vscode.window.showInputBox({
-			placeHolder: '0',
-			prompt: '0: 无图模式, 1: 小图模式, 2: 正常模式（请输入0/1/2）',
-			value: Global.getStickerMode()
-		});
-		if (bool === '0' || bool === '1' || bool === '2') {
-			Global.setStickerMode(bool);
-		}
-	});
-
-	// 公共事件：帖子显示数量
-	let cDisposable8 = vscode.commands.registerCommand('nga.setPostNum', async() => {
-		let snum = await vscode.window.showInputBox({
-			placeHolder: '25',
-			prompt: '输入帖子显示的数量',
-			value: Global.getPostNum().toString()
-		});
-		if (!snum) {
-			snum = '';
-		}
-		let num = parseInt(snum);
-		Global.setPostNum(num);
-	});
-
-	// 公共事件：过滤已读帖子
-	let cDisposable9 = vscode.commands.registerCommand('nga.filterRead', async() => {
-		let bool = await vscode.window.showInputBox({
-			placeHolder: 'true',
-			prompt: '输入true或者false(注意大小写)',
-			value: String(Global.getFilterRead())
-		});
-		if (bool === 'false') {
-			Global.setFilterRead(false);
-		} else if (bool === 'true') {
-			Global.setFilterRead(true);
-		}
-	});
-
 	// 公共事件：搜索
 	let cDisposable10 = vscode.commands.registerCommand('nga.search', () => search());
 
@@ -161,6 +122,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let cDisposable14 = vscode.commands.registerCommand('nga-collection.refreshNode', (root: TreeNode) => collectProvider.refreshRoot(root));
 
+	let cDisposable15 = vscode.commands.registerCommand('nga.settings', () => setting());
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -173,14 +136,12 @@ export function activate(context: vscode.ExtensionContext) {
 		cusDisposable2,
 		cusDisposable3,
 		cusDisposable4,
-		cDisposable7,
-		cDisposable8,
-		cDisposable9,
 		cDisposable10,
 		cDisposable11,
 		cDisposable12,
 		cDisposable13,
 		cDisposable14,
+		cDisposable15,
 	);
 }
 
