@@ -11,15 +11,17 @@ import * as iconv from 'iconv-lite';
  */
 export default async function addNode(): Promise<boolean> {
   let fid = await vscode.window.showInputBox({
-    placeHolder: 'NGA fid',
-    prompt: '在此输入分区对应的fid，在url中可以看到，比如水区是-7'
+    placeHolder: 'NGA fid/stid',
+    prompt: '在此输入分区对应的fid/stid=id，在url中可以看到，比如水区是fid=-7，尘白禁区为stid=34478370'
   });
   if (fid === undefined) {
     return false;
+  } else if (fid.indexOf('fid') == -1 && fid.indexOf('stid') == -1) {
+    fid = `fid=${fid}`;
   }
   console.log('添加的分区fid', fid);
-  console.log(`https://${Global.ngaURL}/thread.php?fid=${fid}`);
-  const r = await http.get(`https://${Global.ngaURL}/thread.php?fid=${fid}`, { responseType: 'arraybuffer' });
+  console.log(`https://${Global.ngaURL}/thread.php?${fid}`);
+  const r = await http.get(`https://${Global.ngaURL}/thread.php?${fid}`, { responseType: 'arraybuffer' });
   const $ = cheerio.load(r.data);
   const t = $('head title').text().replace(' NGA玩家社区', '');
   console.log('添加的分区title', t);

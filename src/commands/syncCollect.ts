@@ -37,11 +37,21 @@ async function syncCollectNodes(): Promise<boolean> {
   }
   console.log("收藏的分区", data);
   Object.keys(data).forEach(async (key) => {
-    let { fid, name = "" } = data[key];
-    Global.addCustomNode({
-      name: fid,
-      title: name,
-    });
+    if ('fid' in data[key])
+    {
+      let { fid, name = "" } = data[key];
+      Global.addCustomNode({
+        name: `fid=${fid}`,
+        title: name,
+      });
+    } else if ('stid' in data[key])
+    {
+      let { stid, name = "" } = data[key];
+      Global.addCustomNode({
+        name: `stid=${stid}`,
+        title: name,
+      });
+    }
   });
   customProvider.refreshNodeList();
   vscode.window.showInformationMessage("同步完成");

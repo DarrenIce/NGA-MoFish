@@ -35,12 +35,12 @@ export class NGA {
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         console.log(Global.ngaURL);
         let maxnum = Global.getPostNum();
-        // console.log(`https://bbs.nga.cn/thread.php?fid=${node.name}&lite=js&noprefix`);
+        console.log(`https://${Global.ngaURL}/thread.php?${node.name}&lite=js&page=1&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
         let nownum = 0;
         for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://${Global.ngaURL}/thread.php?fid=${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
+            const res = await http.get(`https://${Global.ngaURL}/thread.php?${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
             try {
                 let js = JSON.parse(res.data).data;
                 console.log(js);
@@ -53,7 +53,7 @@ export class NGA {
                 for (let val in js.__T) {
                     const topic = new Topic();
                     const t = js.__T[val];
-                    if (t.fid != node.name) {
+                    if (`fid=${t.fid}` != node.name && node.name.indexOf("fid") != -1) {
                         continue;
                     }
                     topic.title = t.subject;

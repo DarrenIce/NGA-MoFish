@@ -18,6 +18,13 @@ export default class CustomProvider extends BaseProvider {
    */
   refreshNodeList() {
     const customNodes = Global.getCustomNodes();
+    for (let val in customNodes)
+    {
+      if (customNodes[val].name.indexOf('fid') == -1 && customNodes[val].name.indexOf('stid') == -1)
+      {
+        customNodes[val].name = `fid=${customNodes[val].name}`;
+      }
+    }
     if (customNodes.length) {
       this.rootElements = customNodes.map<TreeNode>((n) => {
         const treeNode = new TreeNode(n.title.replace(' NGA玩家社区', ''), true);
