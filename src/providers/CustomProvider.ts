@@ -20,7 +20,7 @@ export default class CustomProvider extends BaseProvider {
     const customNodes = Global.getCustomNodes();
     for (let val in customNodes)
     {
-      if (customNodes[val].name.indexOf('fid') == -1 && customNodes[val].name.indexOf('stid') == -1)
+      if (('' + customNodes[val].name).indexOf('fid') == -1 && ('' + customNodes[val].name).indexOf('stid') == -1)
       {
         customNodes[val].name = `fid=${customNodes[val].name}`;
       }
