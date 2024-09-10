@@ -2,6 +2,7 @@ import { ExtensionContext, Webview, Uri } from "vscode";
 import * as iconvlite from "iconv-lite";
 import { Node } from "./models/node";
 import { ProxySetting } from "./models/proxySetting";
+import { NodePage } from "./models/nodePage";
 
 export default class Global {
   static ngaURL = "bbs.nga.cn";
@@ -47,6 +48,7 @@ export default class Global {
       _node.title = node.title;
     } else {
       nodes.push(node);
+      this.addNodePage(node.name, 1);
     }
     this.setCustomNodes(nodes);
     return true;
@@ -135,5 +137,60 @@ export default class Global {
 
   static setNgaDomain(domain: string) {
     this.context?.globalState.update("domain", domain);
+  }
+
+  static initNodePage() {
+    const nodes = this.getCustomNodes();
+    let nps: NodePage[] = [];
+    for (let n in nodes) {
+      let np: NodePage = new NodePage();
+      np.fid = nodes[n].name;
+      np.page = 1;
+      nps.push(np);
+    }
+    this.setNodePage(nps);
+  }
+
+  static setNodePage(newNodePage: NodePage[]) {
+    this.context?.globalState.update("nodePage", newNodePage);
+  }
+
+  static getNodePage(): NodePage[] {
+    return this.context?.globalState.get<NodePage[]>("nodePage") || [];
+  }
+
+  static getCertainPage(fid: string): number {
+    let nps = this.getNodePage();
+    for (let n in nps) {
+      if (nps[n].fid === fid) {
+        return nps[n].page;
+      }
+    }
+    return -1;
+  }
+
+  static addNodePage(fid: string, page: number): boolean {
+    let nps = this.getNodePage();
+    for (let n in nps) {
+      if (nps[n].fid === fid) {
+        return false;
+      }
+    }
+    let np: NodePage = new NodePage();
+    np.fid = fid;
+    np.page = page;
+    nps.push(np);
+    this.setNodePage(nps);
+    return true;
+  }
+
+  static updateNodePage(fid: string, page: number) {
+    let nps = this.getNodePage();
+    for (let n in nps) {
+      if (nps[n].fid === fid) {
+        nps[n].page = page;
+      }
+    }
+    this.setNodePage(nps);
   }
 }

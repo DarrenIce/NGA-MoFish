@@ -4,7 +4,11 @@ import Global from "../global";
 
 export default async function setting() {
   const sel = await vscode.window.showQuickPick(
-    ["代理设置", "图片模式", "帖子显示数量", "是否过滤已读帖子", "NGA域名配置"],
+    // ["代理设置", "图片模式", "帖子显示数量", "是否过滤已读帖子", "NGA域名配置"],
+    // {
+    //   placeHolder: "设置",
+    // }
+    ["代理设置", "图片模式", "是否过滤已读帖子", "NGA域名配置"],
     {
       placeHolder: "设置",
     }
@@ -17,9 +21,9 @@ export default async function setting() {
     case "图片模式":
       pictureSetting();
       break;
-    case "帖子显示数量":
-      postSetting();
-      break;
+    // case "帖子显示数量":
+    //   postSetting();
+    //   break;
     case "是否过滤已读帖子":
       filterSetting();
       break;
@@ -75,18 +79,18 @@ async function pictureSetting() {
   }
 }
 
-async function postSetting() {
-  let snum = await vscode.window.showInputBox({
-    placeHolder: "25",
-    prompt: "输入帖子显示的数量",
-    value: Global.getPostNum().toString(),
-  });
-  if (!snum) {
-    snum = "";
-  }
-  let num = parseInt(snum);
-  Global.setPostNum(num);
-}
+// async function postSetting() {
+//   let snum = await vscode.window.showInputBox({
+//     placeHolder: "25",
+//     prompt: "输入帖子显示的数量",
+//     value: Global.getPostNum().toString(),
+//   });
+//   if (!snum) {
+//     snum = "";
+//   }
+//   let num = parseInt(snum);
+//   Global.setPostNum(num);
+// }
 
 async function filterSetting() {
   let bool = await vscode.window.showInputBox({

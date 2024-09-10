@@ -34,56 +34,91 @@ export class NGA {
 
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         console.log(Global.getNgaDomain());
-        let maxnum = Global.getPostNum();
-        console.log(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=1&noprefix`);
+        let page = Global.getCertainPage(node.name);
+        console.log(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=${page}&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
-        let nownum = 0;
-        for (let i=1; i <=10; i++) {
-            const res = await http.get(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
-            try {
-                let js = JSON.parse(res.data).data;
-                console.log(js);
-                let fid2name = new Map();
-                for (let f in js.__F.sub_forums) {
-                    fid2name.set(f, js.__F.sub_forums[f]['1']);
-                }
-                fid2name.set(node.name, node.title);
-                
-                for (let val in js.__T) {
-                    const topic = new Topic();
-                    const t = js.__T[val];
-                    if (`fid=${t.fid}` != node.name && node.name.indexOf("fid") != -1) {
-                        continue;
-                    }
-                    topic.title = t.subject;
-                    let tid = parseInt(t.tid);
-                    if (tids.indexOf(tid) !== -1) {
-                        continue;
-                    }
-                    let readList = Global.getReadList();
-                    if (readList.indexOf(tid) !== -1) {
-                        if (Global.context?.globalState.get('filterRead')) {
-                            continue;
-                        } else {
-                            topic.title = `(已读)` + topic.title;
-                        }
-                    }
-                    topic.link = `https://${Global.getNgaDomain()}${t.tpcurl}&lite=js&noprefix`;
-                    topic.node = node;
-                    list.push(topic);
-                    tids.push(tid);
-                    nownum = nownum + 1;
-                    if (nownum >= maxnum) {
-                        return list;
-                    }
-                }
-            } catch {
+        const res = await http.get(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=${page}&noprefix`, { responseType: 'arraybuffer' });
+        let js = JSON.parse(res.data).data;
+        // console.log(js);
+        let fid2name = new Map();
+        for (let f in js.__F.sub_forums) {
+            fid2name.set(f, js.__F.sub_forums[f]['1']);
+        }
+        fid2name.set(node.name, node.title);
+        
+        for (let val in js.__T) {
+            const topic = new Topic();
+            const t = js.__T[val];
+            if (`fid=${t.fid}` != node.name && node.name.indexOf("fid") != -1) {
                 continue;
             }
+            topic.title = t.subject;
+            let tid = parseInt(t.tid);
+            if (tids.indexOf(tid) !== -1) {
+                continue;
+            }
+            let readList = Global.getReadList();
+            if (readList.indexOf(tid) !== -1) {
+                if (Global.context?.globalState.get('filterRead')) {
+                    continue;
+                } else {
+                    topic.title = `(已读)` + topic.title;
+                }
+            }
+            topic.link = `https://${Global.getNgaDomain()}${t.tpcurl}&lite=js&noprefix`;
+            topic.node = node;
+            list.push(topic);
+            tids.push(tid);
         }
-        
         return list;
+        // let maxnum = Global.getPostNum();
+        // let nownum = 0;
+        // for (let i=1; i <=10; i++) {
+        //     const res = await http.get(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=${i}&noprefix`, { responseType: 'arraybuffer' });
+        //     try {
+        //         let js = JSON.parse(res.data).data;
+        //         console.log(js);
+        //         let fid2name = new Map();
+        //         for (let f in js.__F.sub_forums) {
+        //             fid2name.set(f, js.__F.sub_forums[f]['1']);
+        //         }
+        //         fid2name.set(node.name, node.title);
+                
+        //         for (let val in js.__T) {
+        //             const topic = new Topic();
+        //             const t = js.__T[val];
+        //             if (`fid=${t.fid}` != node.name && node.name.indexOf("fid") != -1) {
+        //                 continue;
+        //             }
+        //             topic.title = t.subject;
+        //             let tid = parseInt(t.tid);
+        //             if (tids.indexOf(tid) !== -1) {
+        //                 continue;
+        //             }
+        //             let readList = Global.getReadList();
+        //             if (readList.indexOf(tid) !== -1) {
+        //                 if (Global.context?.globalState.get('filterRead')) {
+        //                     continue;
+        //                 } else {
+        //                     topic.title = `(已读)` + topic.title;
+        //                 }
+        //             }
+        //             topic.link = `https://${Global.getNgaDomain()}${t.tpcurl}&lite=js&noprefix`;
+        //             topic.node = node;
+        //             list.push(topic);
+        //             tids.push(tid);
+        //             nownum = nownum + 1;
+        //             if (nownum >= maxnum) {
+        //                 return list;
+        //             }
+        //         }
+        //     } catch {
+        //         continue;
+        //     }
+        // }
+        
+        // return list;
     }
 
     static async getTopicByTid(tid: string) {
@@ -369,5 +404,15 @@ export class NGA {
             userMap.set(users[user]['uid'], users[user]);
         }
         return userMap;
+    }
+
+    static pageTurning(fid: string, turn: number): boolean {
+        let page = Global.getCertainPage(fid);
+        page = page + turn;
+        if (page <= 0) {
+            return false;
+        }
+        Global.updateNodePage(fid, page);
+        return true;
     }
 }

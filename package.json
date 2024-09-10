@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.7.1",
+	"version": "1.8.0",
 	"publisher": "DarrenB",
 	"repository": {
 		"type": "git",
@@ -98,6 +98,16 @@
 				"command": "nga.settings",
 				"title": "设置",
 				"icon": "$(gear)"
+			},
+			{
+				"command": "nga-custom.prevPage",
+				"title": "上一页",
+				"icon": "$(arrow-up)"
+			},
+			{
+				"command": "nga-custom.nextPage",
+				"title": "下一页",
+				"icon": "$(arrow-down)"
 			}
 		],
 		"viewsContainers": {
@@ -173,9 +183,19 @@
 					"when": "viewItem == item"
 				},
 				{
+					"command": "nga-custom.prevPage",
+					"when": "view == nga-custom && viewItem == dir",
+					"group": "inline@0"
+				},
+				{
+					"command": "nga-custom.nextPage",
+					"when": "view == nga-custom && viewItem == dir",
+					"group": "inline@1"
+				},
+				{
 					"command": "nga-custom.refreshNode",
 					"when": "view == nga-custom && viewItem == dir",
-					"group": "inline"
+					"group": "inline@2"
 				},
 				{
 					"command": "nga-collection.refreshNode",

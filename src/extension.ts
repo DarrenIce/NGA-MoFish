@@ -124,6 +124,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let cDisposable15 = vscode.commands.registerCommand('nga.settings', () => setting());
 
+	let cDisposable16 = vscode.commands.registerCommand('nga-custom.prevPage', (root: TreeNode) => {
+		NGA.pageTurning(root.nodeName!, -1);
+		customProvider.refreshRoot(root);
+	});
+
+	let cDisposable17 = vscode.commands.registerCommand('nga-custom.nextPage', (root: TreeNode) => {
+		NGA.pageTurning(root.nodeName!, 1);
+		customProvider.refreshRoot(root);
+	});
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -142,7 +152,11 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable13,
 		cDisposable14,
 		cDisposable15,
+		cDisposable16,
+		cDisposable17,
 	);
+
+	Global.initNodePage();
 }
 
 // this method is called when your extension is deactivated
