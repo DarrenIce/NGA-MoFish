@@ -17,6 +17,8 @@ import { User } from './models/user';
 import CollectProvider from './providers/CollectProvider';
 import setting from './commands/setting';
 
+let pageNoticeBar: vscode.StatusBarItem;
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -134,6 +136,15 @@ export function activate(context: vscode.ExtensionContext) {
 		customProvider.refreshRoot(root);
 	});
 
+	pageNoticeBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
+	context.subscriptions.push(pageNoticeBar);
+
+	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor((editor) => {
+		console.log("Active Editor Changed: " + editor?.document.fileName);
+		pageNoticeBar.hide();
+	}));
+
+
 	context.subscriptions.push(
 		testDisposable,
 		cDisposable1,
@@ -162,4 +173,9 @@ export function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {
 	Global.context = undefined;
+}
+
+export function updateStatusBar(title: string, page: number) {
+	pageNoticeBar.text = `${title} (第${page}页)`;
+	pageNoticeBar.show();
 }

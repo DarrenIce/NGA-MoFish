@@ -15,6 +15,7 @@ import { Comment } from './models/comment';
 import { TopicReply } from './models/topicReply';
 import { SearchElement } from './models/searchElement';
 import * as vscode from 'vscode';
+import showStatusBar from './commands/showStatusBar';
 
 
 export class NGA {
@@ -35,6 +36,7 @@ export class NGA {
     static async getTopicListByNode(node: Node): Promise<Topic[]> {
         console.log(Global.getNgaDomain());
         let page = Global.getCertainPage(node.name);
+        showStatusBar(node.title, page);
         console.log(`https://${Global.getNgaDomain()}/thread.php?${node.name}&lite=js&page=${page}&noprefix`);
         const list: Topic[] = [];
         let tids: number[] = [];
