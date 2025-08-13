@@ -417,4 +417,13 @@ export class NGA {
         Global.updateNodePage(fid, page);
         return true;
     }
+
+    static backFirstPage(fid: string): boolean {
+        let page = Global.getCertainPage(fid);
+        if (page === 1) {
+            return false;
+        }
+        Global.updateNodePage(fid, 1);
+        return true;
+    }
 }

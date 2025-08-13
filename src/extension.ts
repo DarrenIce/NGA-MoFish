@@ -136,6 +136,13 @@ export function activate(context: vscode.ExtensionContext) {
 		customProvider.refreshRoot(root);
 	});
 
+	let cDisposable18 = vscode.commands.registerCommand('nga-custom.jumpFirst', (root: TreeNode) => {
+		const isChanged = NGA.backFirstPage(root.nodeName!);
+		if (isChanged) {
+			customProvider.refreshRoot(root);
+		}
+	});
+
 	pageNoticeBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
 	context.subscriptions.push(pageNoticeBar);
 
@@ -165,6 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable15,
 		cDisposable16,
 		cDisposable17,
+		cDisposable18,
 	);
 
 	Global.initNodePage();
