@@ -130,9 +130,15 @@ export class NGA {
         let js = JSON.parse(j).data;
         let node = new TreeNode(js.__T.subject, false);
         node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${tid}`;
-        topicItemClick(node);
-    }
-
+        // 修改为打开到当前选定的选项卡
+        try {
+            vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup').then(() => {
+                topicItemClick(node);
+            });
+        } catch (error) {
+            topicItemClick(node);
+        }
+    }    
     static parseJson(data: string): any {
         let r = data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments')
                     .replace(/\[\/img\]/g, '\\">')
