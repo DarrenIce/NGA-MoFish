@@ -13,6 +13,28 @@ vsPostMessage('setTitle', {
   title: document.title
 });
 
+// 无图模式：点击占位加载当前图片
+document.querySelectorAll('.nga-img-placeholder').forEach((el) => {
+  el.style.cursor = 'pointer';
+  el.title = '点击加载图片';
+  el.onclick = () => {
+    const src = el.dataset['src'];
+    if (!src) {
+      return;
+    }
+    const img = document.createElement('img');
+    img.src = src;
+    img.onload = () => {
+      AutoResizeImage(40, 40, img);
+      img.style.cursor = 'zoom-in';
+      img.onclick = () => {
+        AutoResizeImage(10000, 10000, img);
+      };
+    };
+    el.replaceWith(img);
+  };
+});
+
 // 给图片添加查看图片的功能
 document.querySelectorAll('img').forEach((img) => {
   img.onload = () => {

@@ -148,7 +148,12 @@ export class NGA {
                     .replace(/"signature":".*?",/g, '')
                     .replace(/"alterinfo":".*?",/g, '');
         if (Global.getStickerMode() === '0') {
-            r = r.replace(/<img.*?>/g, '[img]');
+            // 无图模式：不直接移除图片（会丢失URL，无法按需加载）
+            // 改为替换成可点击占位，点击后由webview脚本原地加载该图片。
+            r = r.replace(
+                /<img\b[^>]*?src=\\"([^\\"]+)\\"[^>]*?>/g,
+                (_m, src) => `<span class=\\"nga-img-placeholder\\" data-src=\\"${src}\\">[图片] 点击加载</span>`
+            );
         }
         let js = JSON5.parse(r).data;
         return js;
