@@ -8,7 +8,7 @@ export default async function setting() {
     // {
     //   placeHolder: "设置",
     // }
-    ["代理设置", "图片模式", "是否过滤已读帖子", "NGA域名配置"],
+    ["代理设置", "图片模式", "标题字体大小", "是否过滤已读帖子", "NGA域名配置"],
     {
       placeHolder: "设置",
     }
@@ -20,6 +20,9 @@ export default async function setting() {
       break;
     case "图片模式":
       pictureSetting();
+      break;
+    case "标题字体大小":
+      titleHeadingSetting();
       break;
     // case "帖子显示数量":
     //   postSetting();
@@ -76,6 +79,22 @@ async function pictureSetting() {
   });
   if (bool === "0" || bool === "1" || bool === "2") {
     Global.setStickerMode(bool);
+  }
+}
+
+async function titleHeadingSetting() {
+  let heading = await vscode.window.showInputBox({
+    placeHolder: "h1",
+    prompt: "输入标题级别：h1、h2、h3 或 h4",
+    value: Global.getTopicTitleHeading(),
+  });
+  if (heading === undefined) {
+    return;
+  }
+
+  heading = heading.trim().toLowerCase();
+  if (heading === "h1" || heading === "h2" || heading === "h3" || heading === "h4") {
+    Global.setTopicTitleHeading(heading);
   }
 }
 

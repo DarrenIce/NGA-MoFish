@@ -108,6 +108,14 @@ export default class Global {
     this.context?.globalState.update("filterRead", mode);
   }
 
+  static getTopicTitleHeading(): string {
+    return this.context?.globalState.get<string>("topicTitleHeading") || "h1";
+  }
+
+  static setTopicTitleHeading(heading: string) {
+    this.context?.globalState.update("topicTitleHeading", heading);
+  }
+
   static updateUserLabel(users: any[]) {
     this.context?.globalState.update("users1", users);
   }
