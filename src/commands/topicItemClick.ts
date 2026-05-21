@@ -27,6 +27,13 @@ function _getTitle(title: string) {
   return title.length <= 15 ? title : title.slice(0, 15) + "...";
 }
 
+function _getTopicTitleHeadingClass(): string {
+  const heading = Global.getTopicTitleHeading();
+  return ["h1", "h2", "h3", "h4"].includes(heading)
+    ? `topic-title-${heading}`
+    : "topic-title-h1";
+}
+
 /**
  * 创建webview面板
  * @param id 面板id
@@ -146,12 +153,14 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
           topic: detail,
           // topicYml: yaml.safeDump(detail),
           contextPath: Global.getWebViewContextPath(panel.webview),
+          titleHeadingClass: _getTopicTitleHeadingClass(),
         });
       } else {
         panel.webview.html = NGA.renderPage("topic.html", {
           topic: detail,
           // topicYml: yaml.safeDump(detail),
           contextPath: Global.getWebViewContextPath(panel.webview),
+          titleHeadingClass: _getTopicTitleHeadingClass(),
         });
       }
 
@@ -205,11 +214,13 @@ function loadTopicInPanel(
         panel.webview.html = NGA.renderPage("topic-spic.html", {
           topic: detail,
           contextPath: Global.getWebViewContextPath(panel.webview),
+          titleHeadingClass: _getTopicTitleHeadingClass(),
         });
       } else {
         panel.webview.html = NGA.renderPage("topic.html", {
           topic: detail,
           contextPath: Global.getWebViewContextPath(panel.webview),
+          titleHeadingClass: _getTopicTitleHeadingClass(),
         });
       }
     })

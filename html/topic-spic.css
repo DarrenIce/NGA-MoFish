@@ -54,6 +54,22 @@ blockquote p {
   flex: 1;
 }
 
+.topic-header .topic-title-h1 {
+  font-size: 2em;
+}
+
+.topic-header .topic-title-h2 {
+  font-size: 1.5em;
+}
+
+.topic-header .topic-title-h3 {
+  font-size: 1.17em;
+}
+
+.topic-header .topic-title-h4 {
+  font-size: 1em;
+}
+
 .topic-header img {
   width: 73px;
   height: 73px;
