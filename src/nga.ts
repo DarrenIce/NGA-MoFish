@@ -17,6 +17,59 @@ import { SearchElement } from './models/searchElement';
 import * as vscode from 'vscode';
 import showStatusBar from './commands/showStatusBar';
 
+/** 按 JSON 字符串转义规则删除字段，避免正则 .*? 在引号内误截断 */
+function stripJsonStringFields(json: string, fieldNames: string[]): string {
+    for (const fieldName of fieldNames) {
+        const key = `"${fieldName}":`;
+        let searchFrom = 0;
+        while (searchFrom < json.length) {
+            const idx = json.indexOf(key, searchFrom);
+            if (idx === -1) {
+                break;
+            }
+            let i = idx + key.length;
+            while (i < json.length && /\s/.test(json[i])) {
+                i++;
+            }
+            if (json[i] !== '"') {
+                searchFrom = idx + key.length;
+                continue;
+            }
+            i++;
+            while (i < json.length) {
+                if (json[i] === '\\') {
+                    i += 2;
+                    continue;
+                }
+                if (json[i] === '"') {
+                    let end = i + 1;
+                    if (json[end] === ',') {
+                        end++;
+                    }
+                    json = json.slice(0, idx) + json.slice(end);
+                    searchFrom = idx;
+                    break;
+                }
+                i++;
+            }
+            if (i >= json.length) {
+                break;
+            }
+        }
+    }
+    return json;
+}
+
+function prepareNgaLiteJsRaw(data: string): string {
+    let r = data;
+    const prefix = 'window.script_muti_get_var_store=';
+    if (r.startsWith(prefix)) {
+        r = r.slice(prefix.length);
+    }
+    // alterinfo 等字段中的字面制表符会导致 JSON 解析失败（NGA API 文档说明 https://github.com/AgMonk/nga-api-doc）
+    r = r.replace(/\t/g, '');
+    return stripJsonStringFields(r, ['signature', 'alterinfo']);
+}
 
 export class NGA {
 
@@ -125,9 +178,7 @@ export class NGA {
 
     static async getTopicByTid(tid: string) {
         const res = await http.get(`https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
-        let j = res.data.replace(/"alterinfo":".*?",/g, '').replace(/\[img\]\./g, '<img src=\\"https://img.nga.178.com/attachments').replace(/\[\/img\]/g, '\\">').replace(/\[img\]/g, '<img src=\\"').replace(/\[url\]/g, '<a href=\\"').replace(/\[\/url\]/g, '\\">url</a>').replace(/"signature":".*?",/g, '');
-        // console.log(j);
-        let js = JSON.parse(j).data;
+        const js = NGA.parseJson(res.data);
         let node = new TreeNode(js.__T.subject, false);
         node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${tid}`;
         // 修改为打开到当前选定的选项卡
@@ -140,13 +191,12 @@ export class NGA {
         }
     }    
     static parseJson(data: string): any {
-        let r = data.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments')
-                    .replace(/\[\/img\]/g, '\\">')
-                    .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"')
-                    .replace(/\[url\]/g, '<a href=\\"')
-                    .replace(/\[\/url\]/g, '\\">url</a>')
-                    .replace(/"signature":".*?",/g, '')
-                    .replace(/"alterinfo":".*?",/g, '');
+        let r = prepareNgaLiteJsRaw(data);
+        r = r.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments')
+            .replace(/\[\/img\]/g, '\\">')
+            .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"')
+            .replace(/\[url\]/g, '<a href=\\"')
+            .replace(/\[\/url\]/g, '\\">url</a>');
         if (Global.getStickerMode() === '0') {
             // 无图模式：不直接移除图片（会丢失URL，无法按需加载）
             // 改为替换成可点击占位，点击后由webview脚本原地加载该图片。
@@ -155,8 +205,12 @@ export class NGA {
                 (_m, src) => `<span class=\\"nga-img-placeholder\\" data-src=\\"${src}\\">[图片] 点击加载</span>`
             );
         }
-        let js = JSON5.parse(r).data;
-        return js;
+        try {
+            return JSON5.parse(r).data;
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            throw new Error(`帖子数据解析失败：${msg}`);
+        }
     }
 
     static async getTopicDetail(topicLink: string, onlyAuthor: boolean, page: number): Promise<TopicDetail> {
