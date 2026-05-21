@@ -1,5 +1,10 @@
 # 更新日志
 
+## [1.8.7]
+
+- 修复帖子JSON解析失败问题 @[quietdw](https://github.com/quietdw)
+- 添加修改标题字符大小设置选项 @[Tamanegii](https://github.com/Tamanegii)
+
 ## [1.8.6]
 
 - 无图模式下可以点击图片进行加载显示
