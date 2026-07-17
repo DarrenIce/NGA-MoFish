@@ -71,6 +71,57 @@ function prepareNgaLiteJsRaw(data: string): string {
     return stripJsonStringFields(r, ['signature', 'alterinfo']);
 }
 
+function tryParseJson5(s: string): any {
+    try {
+        return JSON5.parse(s);
+    } catch (e) {
+        return null;
+    }
+}
+
+// 修复被截断的 JSON：回退到最后一个安全的结构边界，并补齐未闭合的 {} / []，
+// 从而尽量恢复已经完整到达的部分（如主楼与前面的楼层），而不是整帖解析失败。
+function repairTruncatedJson(s: string): string {
+    let inStr = false;
+    let esc = false;
+    const stack: string[] = [];
+    let lastSafe = -1;
+    let lastSafeStack: string[] | null = null;
+    for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        if (inStr) {
+            if (esc) {
+                esc = false;
+            } else if (c === '\\') {
+                esc = true;
+            } else if (c === '"') {
+                inStr = false;
+            }
+            continue;
+        }
+        if (c === '"') {
+            inStr = true;
+        } else if (c === '{' || c === '[') {
+            stack.push(c);
+        } else if (c === '}' || c === ']') {
+            stack.pop();
+            lastSafe = i + 1;
+            lastSafeStack = stack.slice();
+        } else if (c === ',') {
+            lastSafe = i;
+            lastSafeStack = stack.slice();
+        }
+    }
+    if (lastSafe < 0 || !lastSafeStack) {
+        return s;
+    }
+    let out = s.slice(0, lastSafe);
+    for (let k = lastSafeStack.length - 1; k >= 0; k--) {
+        out += lastSafeStack[k] === '{' ? '}' : ']';
+    }
+    return out;
+}
+
 export class NGA {
 
     static async checkCookie(cookie: string): Promise<boolean> {
@@ -177,9 +228,8 @@ export class NGA {
     }
 
     static async getTopicByTid(tid: string) {
-        const res = await http.get(`https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&page=1&tid=${tid}`, { responseType: 'arraybuffer' });
-        const js = NGA.parseJson(res.data);
-        let node = new TreeNode(js.__T.subject, false);
+        const js = await NGA.getReadJson(`https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&page=1&tid=${tid}`);
+        let node = new TreeNode(js.__T?.subject || '', false);
         node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${tid}`;
         // 修改为打开到当前选定的选项卡
         try {
@@ -190,7 +240,7 @@ export class NGA {
             topicItemClick(node);
         }
     }    
-    static parseJson(data: string): any {
+    static buildLiteInput(data: string): string {
         let r = prepareNgaLiteJsRaw(data);
         r = r.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments')
             .replace(/\[\/img\]/g, '\\">')
@@ -205,16 +255,58 @@ export class NGA {
                 (_m, src) => `<span class=\\"nga-img-placeholder\\" data-src=\\"${src}\\">[图片] 点击加载</span>`
             );
         }
-        try {
-            return JSON5.parse(r).data;
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            throw new Error(`帖子数据解析失败：${msg}`);
+        return r;
+    }
+
+    static parseJson(data: string): any {
+        const r = NGA.buildLiteInput(data);
+        const parsed = tryParseJson5(r);
+        if (parsed) {
+            return parsed.data;
         }
+        // 响应被截断/损坏时，尽量修复以恢复已到达的内容，而不是直接失败
+        const repaired = tryParseJson5(repairTruncatedJson(r));
+        if (repaired) {
+            return repaired.data;
+        }
+        throw new Error('帖子数据解析失败：NGA 返回的数据被截断，无法恢复');
+    }
+
+    // 带匿名兜底的健壮取帖：NGA 登录态的 lite=js 缓存有时会返回被截断的响应
+    // （JSON 不完整，导致 JSON5 报 invalid end of input；而浏览器走的是普通 HTML
+    // 页面所以正常）。匿名请求命中的是另一份完整缓存，检测到截断时用匿名请求兜底重取。
+    static async getReadJson(url: string): Promise<any> {
+        const res = await http.get<string>(url, { responseType: 'arraybuffer' });
+        const cleaned = NGA.buildLiteInput(res.data);
+        const parsed = tryParseJson5(cleaned);
+        if (parsed) {
+            return parsed.data;
+        }
+        try {
+            // headers.Cookie = '' 可绕过请求拦截器注入的登录 Cookie，走匿名缓存
+            const anon = await http.get<string>(url, { responseType: 'arraybuffer', headers: { Cookie: '' } });
+            const anonCleaned = NGA.buildLiteInput(anon.data);
+            const anonParsed = tryParseJson5(anonCleaned);
+            if (anonParsed) {
+                return anonParsed.data;
+            }
+            // 两份缓存都被截断：取更长的那份修复，尽量多恢复楼层
+            const best = ('' + anon.data).length > ('' + res.data).length ? anonCleaned : cleaned;
+            const repairedBest = tryParseJson5(repairTruncatedJson(best));
+            if (repairedBest) {
+                return repairedBest.data;
+            }
+        } catch (e) {
+            // 匿名兜底失败（如网络异常或需要登录），继续走本地修复
+        }
+        const repaired = tryParseJson5(repairTruncatedJson(cleaned));
+        if (repaired) {
+            return repaired.data;
+        }
+        throw new Error('帖子数据解析失败：NGA 返回的数据被截断，匿名重取仍失败');
     }
 
     static async getTopicDetail(topicLink: string, onlyAuthor: boolean, page: number): Promise<TopicDetail> {
-        const res = await http.get<string>(topicLink + '&page=1', { responseType: 'arraybuffer' });
         const topic = new TopicDetail();
         let range = 5;
 
@@ -239,14 +331,14 @@ export class NGA {
 
         topic.onlyAuthor = onlyAuthor;
         topic.pageNow = page;
-        let js = NGA.parseJson(res.data);
-        topic.id = parseInt(js.__T.tid);
+        let js = await NGA.getReadJson(topicLink + '&page=1');
+        topic.id = parseInt(js.__T?.tid || 0);
         Global.addReadTid(topic.id);
         topic.link = topicLink.replace('&lite=js', '');
-        topic.title = js.__T.subject;
+        topic.title = js.__T?.subject || '';
         topic.node = {
-            name: js.__R['0'].fid,
-            title: js.__F.name || ''
+            name: js.__R?.['0'] ? js.__R['0'].fid : '',
+            title: js.__F?.name || ''
         };
 
         topic.user.uid = '' + js.__R['0'].authorid;
@@ -257,7 +349,7 @@ export class NGA {
         if (Global.getStickerMode() !== '0') {
             topic.content = processSmile(topic.content);
         }
-        topic.replyCount = js.__T.replies;
+        topic.replyCount = js.__T?.replies || (js.__R ? Object.keys(js.__R).length : 0);
         topic.pages = Math.ceil(topic.replyCount / (range * 20));
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
@@ -281,8 +373,7 @@ export class NGA {
             for (let i = onlyAuthor? 1 : (page-1)*range +1; i <= page*range; i++) {
                 topic.needTurn = true;
                 // console.log(topicLink + '&page=' + i);
-                const rs = await http.get<string>(topicLink + '&page=' + i, { responseType: 'arraybuffer' });
-                let js = NGA.parseJson(rs.data);
+                let js = await NGA.getReadJson(topicLink + '&page=' + i);
                 if (js.__PAGE !== i) {
                     topic.needTurn = false;
                     break;
