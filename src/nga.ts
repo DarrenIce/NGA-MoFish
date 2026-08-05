@@ -242,7 +242,7 @@ export class NGA {
     }    
     static buildLiteInput(data: string): string {
         let r = prepareNgaLiteJsRaw(data);
-        r = r.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.178.com/attachments')
+        r = r.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.cn/attachments')
             .replace(/\[\/img\]/g, '\\">')
             .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"')
             .replace(/\[url\]/g, '<a href=\\"')

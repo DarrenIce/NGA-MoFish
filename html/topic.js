@@ -13,12 +13,21 @@ vsPostMessage('setTitle', {
   title: document.title
 });
 
+function normalizeNGAImageUrl(url) {
+  if (!url) {
+    return url;
+  }
+  return url
+    .replace('://img.nga.178.com', '://img.nga.cn')
+    .replace('://img4.nga.178.com', '://img4.nga.cn');
+}
+
 // 无图模式：点击占位加载当前图片
 document.querySelectorAll('.nga-img-placeholder').forEach((el) => {
   el.style.cursor = 'pointer';
   el.title = '点击加载图片';
   el.onclick = () => {
-    const src = el.dataset['src'];
+    const src = normalizeNGAImageUrl(el.dataset['src']);
     if (!src) {
       return;
     }
@@ -36,6 +45,11 @@ document.querySelectorAll('.nga-img-placeholder').forEach((el) => {
 
 // 给图片添加查看图片的功能
 document.querySelectorAll('img').forEach((img) => {
+  const normalizedSrc = normalizeNGAImageUrl(img.src);
+  if (normalizedSrc && normalizedSrc !== img.src) {
+    img.src = normalizedSrc;
+  }
+
   img.onload = () => {
     // if (img.width < 100 && img.height < 100) {
     //   return;
@@ -55,7 +69,7 @@ document.querySelectorAll('img').forEach((img) => {
 const supportImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
 supportImageTypes.forEach((type) => {
   document.querySelectorAll(`.topic-content a[href$=".${type}"]`).forEach((a) => {
-    a.dataset['imageSrc'] = a.href;
+    a.dataset['imageSrc'] = normalizeNGAImageUrl(a.href);
     // vsc中 return false 不能阻止a标签跳转。曲线救国
     a.href = 'javascript:;';
     a.onclick = () => {
@@ -107,28 +121,31 @@ function onSubmit() {
 }
 
 function AutoResizeImage(maxWidth, maxHeight, objImg) {
-  var img = new Image();
-  img.src = objImg.src;
   var hRatio;
   var wRatio;
   var Ratio = 1;
-  var w = img.width;
-  var h = img.height;
+  var w = objImg.naturalWidth || objImg.width;
+  var h = objImg.naturalHeight || objImg.height;
+
+  if (!w || !h) {
+    return;
+  }
+
   wRatio = maxWidth / w;
   hRatio = maxHeight / h;
-  if (maxWidth == 0 && maxHeight == 0) {
+  if (maxWidth === 0 && maxHeight === 0) {
     Ratio = 1;
-  } else if (maxWidth == 0) {//
+  } else if (maxWidth === 0) {
     if (hRatio < 1) Ratio = hRatio;
-  } else if (maxHeight == 0) {
+  } else if (maxHeight === 0) {
     if (wRatio < 1) Ratio = wRatio;
   } else if (wRatio < 1 || hRatio < 1) {
     Ratio = (wRatio <= hRatio ? wRatio : hRatio);
   }
-  // if (Ratio < 1) {
-    w = w * Ratio;
-    h = h * Ratio;
-  // }
+
+  w = w * Ratio;
+  h = h * Ratio;
+
   objImg.height = h;
   objImg.width = w;
 }
