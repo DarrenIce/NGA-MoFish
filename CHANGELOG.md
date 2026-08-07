@@ -1,5 +1,9 @@
 # 更新日志
 
+## [1.8.9]
+
+- 将失效的 img.nga.178.com 域名迁移至 img.nga.cn @[shawtung](https://github.com/shawtung)
+
 ## [1.8.8]
 
 - 修复登录态 lite=js 缓存被截断导致帖子解析失败 @[shawtung](https://github.com/shawtung)
