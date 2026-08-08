@@ -1,0 +1,967 @@
+:root {
+  --mofish-editor-bg: var(--vscode-editor-background, #1e1e1e);
+  --mofish-editor-fg: var(--vscode-editor-foreground, #d4d4d4);
+  --mofish-panel-bg: var(--vscode-editorWidget-background, #252526);
+  --mofish-header-bg: var(--vscode-editorGroupHeader-tabsBackground, #181818);
+  --mofish-tab-bg: var(--vscode-tab-activeBackground, #1e1e1e);
+  --mofish-border: var(--vscode-panel-border, #3c3c3c);
+  --mofish-muted: var(--vscode-descriptionForeground, #9d9d9d);
+  --mofish-accent: var(--vscode-textLink-foreground, #4daafc);
+  --mofish-hover: var(--vscode-list-hoverBackground, #2a2d2e);
+  --mofish-terminal-bg: var(--vscode-terminal-background, #1e1e1e);
+  --mofish-terminal-fg: var(--vscode-terminal-foreground, #d4d4d4);
+  --mofish-mono: var(--vscode-editor-font-family, "Cascadia Code", Consolas, monospace);
+  --mofish-ui: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-editor-bg);
+  font-family: var(--mofish-ui);
+  letter-spacing: 0;
+}
+
+body a {
+  color: var(--mofish-accent);
+}
+
+.workbench {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) 22px;
+  min-height: 100vh;
+  background: var(--mofish-editor-bg);
+}
+
+.editor-chrome {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-header-bg);
+  border-bottom: 1px solid var(--mofish-border);
+}
+
+.editor-tabs {
+  display: flex;
+  align-items: stretch;
+  height: 35px;
+}
+
+.editor-tab {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: min(240px, 58vw);
+  padding: 0 10px;
+  gap: 7px;
+  border-right: 1px solid var(--mofish-border);
+  color: var(--vscode-tab-inactiveForeground, var(--mofish-muted));
+  font-size: 12px;
+}
+
+.editor-tab.is-active {
+  color: var(--vscode-tab-activeForeground, var(--mofish-editor-fg));
+  background: var(--mofish-tab-bg);
+  border-top: 1px solid var(--vscode-tab-activeBorderTop, var(--mofish-accent));
+}
+
+.file-icon {
+  display: inline-grid;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  color: #e2c08d;
+  font: 700 10px/1 var(--mofish-mono);
+  border: 1px solid currentColor;
+}
+
+.editor-tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-tab-status {
+  margin-left: auto;
+  font-size: 8px;
+}
+
+.theme-picker {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-left: auto;
+  padding: 0 8px;
+  gap: 5px;
+  color: var(--mofish-muted);
+}
+
+.theme-picker:hover {
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-hover);
+}
+
+.theme-picker select {
+  min-width: 74px;
+  height: 24px;
+  padding: 0 22px 0 6px;
+  border: 1px solid transparent;
+  outline: none;
+  color: inherit;
+  background-color: transparent;
+  font: 12px/1 var(--mofish-ui);
+  cursor: pointer;
+}
+
+.theme-picker select:focus {
+  border-color: var(--vscode-focusBorder, var(--mofish-accent));
+}
+
+.theme-picker select option {
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-panel-bg);
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 27px;
+  padding: 0 14px;
+  gap: 6px;
+  overflow: hidden;
+  color: var(--mofish-muted);
+  background: var(--mofish-tab-bg);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.breadcrumbs span:not(.breadcrumb-separator) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb-separator {
+  flex: 0 0 auto;
+  color: var(--vscode-breadcrumb-foreground, var(--mofish-muted));
+}
+
+.editor-canvas {
+  position: relative;
+  min-width: 0;
+  background: var(--mofish-editor-bg);
+}
+
+.container {
+  min-width: 0;
+  width: min(100%, 1040px);
+  max-width: none;
+  padding: 28px 40px 44px 72px;
+}
+
+.container::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 52px;
+  width: 1px;
+  background: var(--vscode-editorIndentGuide-background, var(--mofish-border));
+  content: "";
+}
+
+.topic-header h1 {
+  min-width: 0;
+  font-family: var(--mofish-ui);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.topic-header h1 a {
+  color: var(--mofish-editor-fg);
+}
+
+.topic-header .topic-title-h1 {
+  font-size: 22px;
+}
+
+.topic-header .topic-title-h2 {
+  font-size: 20px;
+}
+
+.topic-header .topic-title-h3 {
+  font-size: 18px;
+}
+
+.topic-header .topic-title-h4 {
+  font-size: 16px;
+}
+
+.topic-meta,
+.reply-item-wrap .meta {
+  flex-wrap: wrap;
+  row-gap: 6px;
+  color: var(--mofish-muted);
+  font-size: 12px;
+}
+
+.topic-meta .node {
+  padding: 2px 7px;
+  border: 1px solid var(--mofish-border);
+  border-radius: 2px;
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-panel-bg);
+}
+
+.topic-meta .time,
+.reply-item-wrap .meta .time {
+  opacity: 1;
+}
+
+.topic-content {
+  color: var(--mofish-editor-fg);
+  line-height: 1.72;
+}
+
+.topic-content pre,
+.topic-content code {
+  font-family: var(--mofish-mono);
+}
+
+.topic-content pre {
+  overflow-x: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--mofish-border);
+  background: var(--mofish-panel-bg);
+}
+
+.topic-content a.nga-link {
+  overflow-wrap: anywhere;
+}
+
+.topic-content table.nga-table {
+  width: min(100%, 720px);
+  margin: 16px 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.topic-content table.nga-table td,
+.topic-content table.nga-table th {
+  padding: 7px 10px;
+  border: 1px solid var(--mofish-border);
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-panel-bg);
+  text-align: left;
+  vertical-align: top;
+}
+
+.topic-content table.nga-table th {
+  font-weight: 600;
+  background: var(--mofish-hover);
+}
+
+.topic-content del {
+  color: var(--mofish-muted);
+  text-decoration-thickness: 1px;
+}
+
+.topic-content details.nga-collapse {
+  margin: 14px 0;
+  border-left: 2px solid var(--mofish-border);
+  background: var(--mofish-panel-bg);
+}
+
+.topic-content details.nga-collapse summary {
+  padding: 8px 10px;
+  color: var(--mofish-accent);
+  cursor: pointer;
+  user-select: none;
+}
+
+.topic-content .nga-collapse-content {
+  padding: 4px 12px 12px;
+}
+
+.topic-content .nga-inline-quote {
+  margin: 12px 0;
+}
+
+.topic-content .nga-inline-quote .quote-url {
+  margin-top: 0;
+}
+
+blockquote {
+  margin: 12px 0;
+  padding: 9px 12px;
+  border-left: 3px solid var(--mofish-accent);
+  color: var(--mofish-muted);
+  background: var(--mofish-panel-bg);
+}
+
+.quote-url {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0 0;
+  padding: 0;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.quote-marker {
+  color: var(--mofish-muted);
+}
+
+.quote-uid,
+.quote-time {
+  color: var(--mofish-muted);
+  font-family: var(--mofish-mono);
+}
+
+.comments {
+  display: grid;
+  gap: 10px;
+}
+
+.comments-detail {
+  padding: 10px 12px;
+  border: 1px solid var(--mofish-border);
+  background: var(--mofish-panel-bg);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.comment-author {
+  font-weight: 600;
+}
+
+.comment-uid,
+.comment-time {
+  color: var(--mofish-muted);
+  font-family: var(--mofish-mono);
+}
+
+.comment-content {
+  margin-top: 6px;
+}
+
+hr {
+  margin: 24px 0;
+  background: var(--mofish-border);
+}
+
+.reply {
+  counter-reset: reply-line;
+}
+
+.reply h2 {
+  color: var(--mofish-muted);
+  font: 500 12px/1.4 var(--mofish-ui);
+}
+
+.reply-item {
+  position: relative;
+  counter-increment: reply-line;
+  padding: 4px 0;
+}
+
+.reply-item::before {
+  position: absolute;
+  right: calc(100% + 24px);
+  top: 5px;
+  width: 28px;
+  color: var(--vscode-editorLineNumber-foreground, var(--mofish-muted));
+  content: counter(reply-line);
+  font: 12px/20px var(--mofish-mono);
+  text-align: right;
+}
+
+.reply-item-wrap .meta .floor {
+  height: 20px;
+  min-width: 24px;
+  padding: 0 5px;
+  border: 1px solid var(--mofish-border);
+  border-radius: 2px;
+  color: var(--mofish-muted);
+  background: var(--mofish-panel-bg);
+  line-height: 18px;
+}
+
+.topic-toolbar,
+.pages {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-toolbar a,
+.pageUp,
+.pageDown,
+.pages a,
+.pages b {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 7px;
+  border: 1px solid var(--mofish-border);
+  border-radius: 2px;
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-panel-bg);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.topic-toolbar a:hover,
+.pageUp:hover,
+.pageDown:hover,
+.pages a:hover {
+  background: var(--mofish-hover);
+}
+
+.editor-statusbar {
+  position: sticky;
+  z-index: 10;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 22px;
+  padding: 0 8px;
+  gap: 12px;
+  overflow: hidden;
+  color: var(--vscode-statusBar-foreground, #ffffff);
+  background: var(--vscode-statusBar-background, #007acc);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.statusbar-spacer {
+  flex: 1;
+}
+
+/* Markdown 编辑器：保留文档阅读性，以标题符号、折叠标记和行号模拟编辑区。 */
+body[data-topic-theme="editor"] .editor-tab-name::after {
+  margin-left: 7px;
+  color: var(--mofish-muted);
+  content: "Preview";
+}
+
+body[data-topic-theme="editor"] .topic-header h1 a::before {
+  color: var(--vscode-symbolIcon-keywordForeground, #c586c0);
+  content: "# ";
+  font-family: var(--mofish-mono);
+  font-weight: 400;
+}
+
+body[data-topic-theme="editor"] .topic-meta::before,
+body[data-topic-theme="editor"] .reply h2::before {
+  color: var(--vscode-symbolIcon-variableForeground, #75beff);
+  content: "// ";
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="editor"] .reply-item {
+  padding: 10px 0 16px;
+}
+
+body[data-topic-theme="editor"] .reply-item::after {
+  position: absolute;
+  top: 10px;
+  left: -18px;
+  color: var(--vscode-icon-foreground, var(--mofish-muted));
+  content: "⌄";
+  font: 12px/20px var(--mofish-mono);
+}
+
+body[data-topic-theme="editor"] .reply-item-wrap {
+  padding-left: 12px;
+  border-left: 1px solid transparent;
+}
+
+body[data-topic-theme="editor"] .reply-item:hover .reply-item-wrap {
+  border-left-color: var(--vscode-editorIndentGuide-activeBackground, var(--mofish-accent));
+}
+
+/* TypeScript 源码：把主题和楼层组织成对象字面量与数组项。 */
+body[data-topic-theme="source"] {
+  --mofish-accent: var(--vscode-symbolIcon-variableForeground, #75beff);
+}
+
+body[data-topic-theme="source"] .editor-tab.is-active {
+  border-top-color: var(--vscode-symbolIcon-keywordForeground, #c586c0);
+}
+
+body[data-topic-theme="source"] .editor-statusbar {
+  background: var(--vscode-statusBar-noFolderBackground, #68217a);
+}
+
+body[data-topic-theme="source"] .breadcrumbs {
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .container {
+  width: min(100%, 1180px);
+  padding: 28px 48px 52px 92px;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent 23px,
+    rgba(128, 128, 128, 0.14) 24px,
+    transparent 25px
+  );
+  background-position: 68px 0;
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .container::before {
+  left: 68px;
+  background: var(--vscode-editorIndentGuide-activeBackground, var(--mofish-border));
+}
+
+body[data-topic-theme="source"] .topic-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  gap: 10px;
+  border: 1px solid var(--mofish-border);
+  background: var(--mofish-panel-bg);
+}
+
+body[data-topic-theme="source"] .topic-header::before,
+body[data-topic-theme="source"] .topic-header::after,
+body[data-topic-theme="source"] .reply::after {
+  display: block;
+  color: var(--vscode-editorBracketHighlight-foreground1, #ffd700);
+  font: 13px/1.5 var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .topic-header::before {
+  content: "export const thread = {";
+}
+
+body[data-topic-theme="source"] .topic-header::after {
+  content: "};";
+}
+
+body[data-topic-theme="source"] .topic-header h1 {
+  margin: 7px 0;
+  padding-left: 22px;
+  font-family: var(--mofish-mono);
+  font-weight: 400;
+}
+
+body[data-topic-theme="source"] .topic-header h1 a {
+  color: var(--vscode-symbolIcon-stringForeground, #ce9178);
+}
+
+body[data-topic-theme="source"] .topic-header h1 a::before {
+  color: var(--vscode-symbolIcon-propertyForeground, #9cdcfe);
+  content: 'subject: "';
+  font-size: 0.72em;
+}
+
+body[data-topic-theme="source"] .topic-header h1 a::after {
+  color: var(--vscode-symbolIcon-stringForeground, #ce9178);
+  content: '",';
+}
+
+body[data-topic-theme="source"] .topic-meta {
+  padding-left: 22px;
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .topic-meta::before {
+  color: var(--vscode-symbolIcon-propertyForeground, #9cdcfe);
+  content: "metadata: ";
+}
+
+body[data-topic-theme="source"] .container > .topic-content {
+  margin: 0 0 22px 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--mofish-border);
+  background: var(--mofish-panel-bg);
+}
+
+body[data-topic-theme="source"] .topic-content,
+body[data-topic-theme="source"] .reply h2,
+body[data-topic-theme="source"] .reply-item-wrap .meta,
+body[data-topic-theme="source"] .comment-header {
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .reply h2 {
+  margin: 18px 0 12px;
+  color: var(--vscode-symbolIcon-variableForeground, #75beff);
+}
+
+body[data-topic-theme="source"] .reply h2::before {
+  color: var(--vscode-symbolIcon-keywordForeground, #c586c0);
+  content: "const replies = [";
+}
+
+body[data-topic-theme="source"] .reply-count-label::before {
+  color: var(--mofish-muted);
+  content: " // ";
+}
+
+body[data-topic-theme="source"] .reply::after {
+  margin-top: 8px;
+  content: "];";
+}
+
+body[data-topic-theme="source"] .reply-item {
+  margin-bottom: 12px;
+  padding: 12px 16px 12px 36px;
+  border: 1px solid var(--mofish-border);
+  background: var(--mofish-panel-bg);
+}
+
+body[data-topic-theme="source"] .reply-item::before {
+  right: calc(100% + 18px);
+  top: 13px;
+}
+
+body[data-topic-theme="source"] .reply-item::after {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  color: var(--vscode-editorBracketHighlight-foreground1, #ffd700);
+  content: "{";
+  font: 13px/20px var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .reply-item-wrap::after {
+  display: block;
+  margin-top: 8px;
+  color: var(--vscode-editorBracketHighlight-foreground1, #ffd700);
+  content: "},";
+  font: 13px/20px var(--mofish-mono);
+}
+
+body[data-topic-theme="source"] .reply-item-wrap .meta::before {
+  color: var(--vscode-symbolIcon-propertyForeground, #9cdcfe);
+  content: "meta: ";
+}
+
+body[data-topic-theme="source"] blockquote,
+body[data-topic-theme="source"] .comments-detail,
+body[data-topic-theme="source"] details.nga-collapse {
+  border-color: var(--vscode-editorBracketHighlight-foreground2, var(--mofish-accent));
+  background: var(--mofish-panel-bg);
+}
+
+/* PowerShell 终端：去掉编辑器卡片感，改为连续命令输出。 */
+body[data-topic-theme="terminal"] {
+  --mofish-editor-bg: var(--mofish-terminal-bg);
+  --mofish-editor-fg: var(--mofish-terminal-fg);
+  --mofish-panel-bg: var(--vscode-editorWidget-background, #181818);
+  --mofish-accent: var(--vscode-terminal-ansiCyan, #29b8db);
+}
+
+body[data-topic-theme="terminal"] .editor-tabs {
+  height: 30px;
+  border-bottom: 1px solid var(--mofish-border);
+}
+
+body[data-topic-theme="terminal"] .editor-tab {
+  width: auto;
+  min-width: 138px;
+  border-right: 0;
+  font-family: var(--mofish-ui);
+  text-transform: uppercase;
+}
+
+body[data-topic-theme="terminal"] .editor-tab.is-active {
+  border-top: 0;
+  border-bottom: 1px solid var(--mofish-editor-fg);
+  background: transparent;
+}
+
+body[data-topic-theme="terminal"] .file-icon {
+  width: 22px;
+  border: 0;
+  color: var(--vscode-terminal-ansiGreen, #23d18b);
+  font-size: 11px;
+}
+
+body[data-topic-theme="terminal"] .editor-tab-status {
+  display: none;
+}
+
+body[data-topic-theme="terminal"] .breadcrumbs {
+  height: 32px;
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-terminal-bg);
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .breadcrumbs::before {
+  color: var(--vscode-terminal-ansiGreen, #23d18b);
+  content: "PS C:\\workspace\\nga> Get-Content .\\thread.log";
+}
+
+body[data-topic-theme="terminal"] .breadcrumbs span {
+  display: none;
+}
+
+body[data-topic-theme="terminal"] .container {
+  width: 100%;
+  padding: 22px 28px 48px;
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .container::before {
+  display: none;
+}
+
+body[data-topic-theme="terminal"] .topic-header {
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--mofish-border);
+}
+
+body[data-topic-theme="terminal"] .topic-header h1 {
+  font-family: var(--mofish-mono);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+body[data-topic-theme="terminal"] .topic-header h1 a {
+  color: var(--vscode-terminal-ansiWhite, var(--mofish-editor-fg));
+}
+
+body[data-topic-theme="terminal"] .topic-header h1 a::before {
+  color: var(--vscode-terminal-ansiGreen, #23d18b);
+  content: 'PS> Write-Output "';
+}
+
+body[data-topic-theme="terminal"] .topic-header h1 a::after {
+  color: var(--vscode-terminal-ansiGreen, #23d18b);
+  content: '"';
+}
+
+body[data-topic-theme="terminal"] .topic-meta {
+  padding: 7px 0 0;
+  color: var(--vscode-terminal-ansiBrightBlack, var(--mofish-muted));
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .topic-meta::before {
+  color: var(--vscode-terminal-ansiYellow, #f5f543);
+  content: "[INFO] ";
+}
+
+body[data-topic-theme="terminal"] .container > .topic-content {
+  margin: 16px 0 24px;
+}
+
+body[data-topic-theme="terminal"] .container > .topic-content::before,
+body[data-topic-theme="terminal"] .container > .topic-content::after {
+  display: block;
+  color: var(--vscode-terminal-ansiBrightBlack, var(--mofish-muted));
+  font: 12px/1.5 var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .container > .topic-content::before {
+  margin-bottom: 8px;
+  content: "--- BEGIN THREAD OUTPUT ---";
+}
+
+body[data-topic-theme="terminal"] .container > .topic-content::after {
+  margin-top: 8px;
+  content: "--- END THREAD OUTPUT ---";
+}
+
+body[data-topic-theme="terminal"] .topic-content,
+body[data-topic-theme="terminal"] .reply h2,
+body[data-topic-theme="terminal"] .reply-item-wrap .meta,
+body[data-topic-theme="terminal"] .comment-header {
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .reply h2 {
+  margin: 0 0 6px;
+  color: var(--vscode-terminal-ansiGreen, #23d18b);
+}
+
+body[data-topic-theme="terminal"] .reply h2::before {
+  display: block;
+  margin-bottom: 4px;
+  content: "PS> Get-NgaReply | Format-List";
+}
+
+body[data-topic-theme="terminal"] .reply-item {
+  padding: 12px 0 14px 42px;
+  border-bottom: 1px dashed var(--mofish-border);
+}
+
+body[data-topic-theme="terminal"] .reply-item::before {
+  top: 12px;
+  right: auto;
+  left: 0;
+  width: 34px;
+  color: var(--vscode-terminal-ansiYellow, #f5f543);
+  content: "[" counter(reply-line) "]";
+  text-align: left;
+}
+
+body[data-topic-theme="terminal"] .reply-item::after {
+  position: absolute;
+  top: 12px;
+  left: 29px;
+  color: var(--vscode-terminal-ansiCyan, #29b8db);
+  content: ">";
+  font: 12px/20px var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .reply-item-wrap .meta {
+  color: var(--vscode-terminal-ansiBrightBlack, var(--mofish-muted));
+}
+
+body[data-topic-theme="terminal"] .reply-item-wrap .meta .user,
+body[data-topic-theme="terminal"] .comment-author {
+  color: var(--vscode-terminal-ansiGreen, #23d18b);
+}
+
+body[data-topic-theme="terminal"] .reply-item-wrap .meta .floor {
+  border: 0;
+  color: var(--vscode-terminal-ansiYellow, #f5f543);
+  background: transparent;
+}
+
+body[data-topic-theme="terminal"] .reply > hr {
+  display: none;
+}
+
+body[data-topic-theme="terminal"] blockquote {
+  border-left-color: var(--vscode-terminal-ansiYellow, #f5f543);
+  background: transparent;
+}
+
+body[data-topic-theme="terminal"] .comments-detail,
+body[data-topic-theme="terminal"] details.nga-collapse {
+  border-style: dashed;
+  background: transparent;
+}
+
+body[data-topic-theme="terminal"] .topic-toolbar a,
+body[data-topic-theme="terminal"] .pageUp,
+body[data-topic-theme="terminal"] .pageDown,
+body[data-topic-theme="terminal"] .pages a,
+body[data-topic-theme="terminal"] .pages b {
+  border-style: dashed;
+  background: transparent;
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .editor-statusbar {
+  color: var(--vscode-statusBarItem-remoteForeground, #ffffff);
+  background: var(--vscode-statusBarItem-remoteBackground, #16825d);
+}
+
+@media (max-width: 620px) {
+  .editor-tab {
+    width: min(190px, 52vw);
+  }
+
+  .theme-picker-icon {
+    display: none;
+  }
+
+  .theme-picker {
+    padding: 0 4px;
+  }
+
+  .theme-picker select {
+    min-width: 66px;
+  }
+
+  .breadcrumbs {
+    padding: 0 10px;
+  }
+
+  .container {
+    padding: 22px 14px 38px 42px;
+  }
+
+  .container::before {
+    left: 32px;
+  }
+
+  body[data-topic-theme="source"] .topic-header {
+    display: block;
+  }
+
+  body[data-topic-theme="source"] .topic-header h1 {
+    padding-left: 14px;
+  }
+
+  .reply-item::before {
+    right: calc(100% + 12px);
+    width: 20px;
+  }
+
+  .editor-statusbar span:nth-last-child(2) {
+    display: none;
+  }
+
+  .topic-meta .user,
+  .topic-meta .onlyAuthor {
+    margin-left: 6px;
+  }
+
+  .topic-meta > span[style] {
+    margin-left: 6px !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .editor-tab {
+    width: calc(100vw - 100px);
+  }
+
+  .theme-picker select {
+    width: 76px;
+  }
+
+  .editor-statusbar span:first-child {
+    display: none;
+  }
+}
+.user-profile-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 3px;
+  color: var(--vscode-descriptionForeground);
+  background: var(--vscode-editorWidget-background);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 11px;
+  line-height: 18px;
+  vertical-align: middle;
+}
+
+.user-profile-action:hover {
+  border-color: var(--vscode-focusBorder);
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: none;
+}

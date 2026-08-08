@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>用户画像 · {{ user.userNmae }}</title>
+  <link rel="stylesheet" href="{{ contextPath }}/html/user-profile.css" />
+</head>
+
+<body>
+  <div class="profile-workbench">
+    <header class="profile-tabbar">
+      <div class="profile-tab is-active">
+        <span class="profile-icon" aria-hidden="true">◇</span>
+        <span>user-{{ user.uid }}.profile</span>
+        <span class="profile-dirty" aria-hidden="true">●</span>
+      </div>
+    </header>
+
+    <main class="profile-editor">
+      <section class="profile-heading">
+        <div class="profile-avatar" aria-hidden="true">{{ user.userNmae.charAt(0) }}</div>
+        <div>
+          <div class="profile-kicker">NGA USER PROFILE</div>
+          <h1>{{ user.userNmae }}</h1>
+          <div class="profile-uid">UID: {{ user.uid }}</div>
+        </div>
+      </section>
+
+      <p class="profile-notice">
+        报告由配置的模型根据该用户公开历史回帖生成，仅用于内容浏览辅助，不应视为事实认定。
+      </p>
+
+      <section id="loadingState" class="state-panel" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>
+          <div class="state-title">正在准备分析</div>
+          <div id="progressMessage" class="state-message">等待扩展读取配置...</div>
+        </div>
+      </section>
+
+      <section id="errorState" class="state-panel error-panel is-hidden" aria-live="assertive">
+        <div class="error-mark" aria-hidden="true">!</div>
+        <div>
+          <div class="state-title">画像生成失败</div>
+          <div id="errorMessage" class="state-message"></div>
+        </div>
+      </section>
+
+      <section id="resultState" class="result-panel is-hidden">
+        <div class="result-meta">
+          <span id="modelStat"></span>
+          <span id="pageStat"></span>
+          <span id="postStat"></span>
+          <span id="characterStat"></span>
+        </div>
+        <pre id="profileReport" tabindex="0"></pre>
+      </section>
+
+      <div class="profile-actions">
+        <button id="retryButton" type="button">重新分析</button>
+        <button id="copyButton" type="button" disabled>复制报告</button>
+        <button id="settingsButton" type="button" class="secondary">模型配置</button>
+      </div>
+    </main>
+
+    <footer class="profile-statusbar">
+      <span>main*</span>
+      <span class="status-spacer"></span>
+      <span>UTF-8</span>
+      <span>AI Profile</span>
+    </footer>
+  </div>
+
+  <script src="{{ contextPath }}/html/user-profile.js"></script>
+</body>
+
+</html>

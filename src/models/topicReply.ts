@@ -13,7 +13,9 @@ export class TopicReply {
     // 点赞数
     public likes: number = 0;
     public quote: string = '';
+    public quotePid: string = '';
     public quoteuid: string = '';
     public quoteuname: string = '';
+    public quoteTime: string = '';
     public comments: Comment[] = [];
 }

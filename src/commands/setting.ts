@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { ProxySetting } from "../models/proxySetting";
 import Global from "../global";
+import {
+  normalizeChatCompletionsUrl,
+  testChatCompletions,
+} from "../services/modelClient";
 
 export default async function setting() {
   const sel = await vscode.window.showQuickPick(
@@ -8,18 +12,24 @@ export default async function setting() {
     // {
     //   placeHolder: "设置",
     // }
-    ["代理设置", "图片模式", "标题字体大小", "是否过滤已读帖子", "NGA域名配置"],
+    ["模型配置", "代理设置", "图片模式", "帖子主题", "标题字体大小", "是否过滤已读帖子", "NGA域名配置"],
     {
       placeHolder: "设置",
     }
   );
 
   switch (sel) {
+    case "模型配置":
+      await modelSetting();
+      break;
     case "代理设置":
       proxySetting();
       break;
     case "图片模式":
       pictureSetting();
+      break;
+    case "帖子主题":
+      topicThemeSetting();
       break;
     case "标题字体大小":
       titleHeadingSetting();
@@ -95,6 +105,159 @@ async function titleHeadingSetting() {
   heading = heading.trim().toLowerCase();
   if (heading === "h1" || heading === "h2" || heading === "h3" || heading === "h4") {
     Global.setTopicTitleHeading(heading);
+  }
+}
+
+export async function modelSetting() {
+  while (true) {
+    const config = Global.getModelConfig();
+    const hasApiKey = Boolean(await Global.getModelApiKey());
+    const selected = await vscode.window.showQuickPick(
+      [
+        {
+          label: "编辑 Base URL",
+          description: config.baseUrl || "未配置",
+          action: "baseUrl",
+        },
+        {
+          label: "编辑 Model Name",
+          description: config.modelName || "未配置",
+          action: "modelName",
+        },
+        {
+          label: "设置 API Key",
+          description: hasApiKey ? "已安全存储" : "未配置；本地免鉴权服务可留空",
+          action: "apiKey",
+        },
+        {
+          label: "清除 API Key",
+          description: hasApiKey ? "删除已存储的密钥" : "当前没有已存储的密钥",
+          action: "clearApiKey",
+        },
+        {
+          label: "测试 /chat/completions",
+          description: "真实请求并验证 choices[0].message.content",
+          action: "test",
+        },
+      ],
+      {
+        placeHolder: "OpenAI-compatible 模型配置",
+      }
+    );
+
+    if (!selected) {
+      return;
+    }
+
+    switch (selected.action) {
+      case "baseUrl":
+        await editModelBaseUrl();
+        break;
+      case "modelName":
+        await editModelName();
+        break;
+      case "apiKey":
+        await editModelApiKey();
+        break;
+      case "clearApiKey":
+        await Global.clearModelApiKey();
+        vscode.window.showInformationMessage("模型 API Key 已清除");
+        break;
+      case "test":
+        await testModelConnection();
+        break;
+      default:
+        return;
+    }
+  }
+}
+
+async function editModelBaseUrl() {
+  const input = await vscode.window.showInputBox({
+    placeHolder: "https://api.example.com/v1",
+    prompt: "可填写 API 根地址，也可直接填写完整的 /chat/completions 地址",
+    value: Global.getModelConfig().baseUrl,
+    ignoreFocusOut: true,
+  });
+  if (input === undefined) {
+    return;
+  }
+
+  const value = input.trim();
+  if (value) {
+    try {
+      normalizeChatCompletionsUrl(value);
+    } catch (error) {
+      vscode.window.showErrorMessage(error instanceof Error ? error.message : String(error));
+      return;
+    }
+  }
+  await Global.setModelBaseUrl(value);
+}
+
+async function editModelName() {
+  const input = await vscode.window.showInputBox({
+    placeHolder: "例如 gpt-4.1-mini、deepseek-chat 或本地模型名",
+    prompt: "填写服务端 /chat/completions 接受的 model 字段",
+    value: Global.getModelConfig().modelName,
+    ignoreFocusOut: true,
+  });
+  if (input !== undefined) {
+    await Global.setModelName(input.trim());
+  }
+}
+
+async function editModelApiKey() {
+  const input = await vscode.window.showInputBox({
+    placeHolder: "API Key",
+    prompt: "密钥将存入 VS Code SecretStorage，不会传入帖子 Webview",
+    password: true,
+    ignoreFocusOut: true,
+  });
+  if (input === undefined) {
+    return;
+  }
+
+  const value = input.trim();
+  if (!value) {
+    vscode.window.showWarningMessage("API Key 为空；如需免鉴权访问，请使用“清除 API Key”");
+    return;
+  }
+  await Global.setModelApiKey(value);
+  vscode.window.showInformationMessage("模型 API Key 已安全保存");
+}
+
+async function testModelConnection() {
+  const config = Global.getModelConfig();
+  const apiKey = await Global.getModelApiKey();
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `正在测试 ${config.modelName || "模型"} 的 /chat/completions 接口`,
+        cancellable: false,
+      },
+      () => testChatCompletions(config, apiKey, Global.getProxySetting())
+    );
+    vscode.window.showInformationMessage(
+      `模型连接测试成功：${config.modelName} 支持 /chat/completions`
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function topicThemeSetting() {
+  const themes = [
+    { label: "Markdown 编辑器", description: "文档结构、折叠标记与行号", value: "editor" },
+    { label: "TypeScript 源码", description: "对象字面量、数组项与缩进参考线", value: "source" },
+    { label: "PowerShell 终端", description: "连续命令与日志输出", value: "terminal" },
+  ];
+  const selected = await vscode.window.showQuickPick(themes, {
+    placeHolder: "选择帖子页面主题",
+  });
+  if (selected) {
+    Global.setTopicTheme(selected.value);
   }
 }
 

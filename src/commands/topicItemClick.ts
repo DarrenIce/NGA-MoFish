@@ -10,6 +10,7 @@ import { TopicDetail } from "../models/topicDetail";
 import { TopicReply } from "../models/topicReply";
 import axios from "axios";
 import { syncCollectPosts } from "./syncCollect";
+import { openUserProfile } from "./userProfile";
 const yaml = require("js-yaml");
 
 /**
@@ -32,6 +33,18 @@ function _getTopicTitleHeadingClass(): string {
   return ["h1", "h2", "h3", "h4"].includes(heading)
     ? `topic-title-${heading}`
     : "topic-title-h1";
+}
+
+function _renderTopic(panel: vscode.WebviewPanel, detail: TopicDetail) {
+  const template = Global.getStickerMode() === "1"
+    ? "topic-spic.html"
+    : "topic.html";
+  panel.webview.html = NGA.renderPage(template, {
+    topic: detail,
+    contextPath: Global.getWebViewContextPath(panel.webview),
+    titleHeadingClass: _getTopicTitleHeadingClass(),
+    topicTheme: Global.getTopicTheme(),
+  });
 }
 
 /**
@@ -80,6 +93,15 @@ export default function topicItemClick(item: TreeNode) {
       case "setTitle":
         panel.title = _getTitle(message.title);
         break;
+      case "setTopicTheme":
+        Global.setTopicTheme(message.theme);
+        Object.values(panels).forEach((openPanel) => {
+          openPanel.webview.postMessage({
+            command: "applyTopicTheme",
+            theme: Global.getTopicTheme(),
+          });
+        });
+        break;
       case "browseImage":
         _openLargeImage(message.src);
         break;
@@ -115,6 +137,9 @@ export default function topicItemClick(item: TreeNode) {
       case "delLabel":
         NGA.delLabel(panel, message.user, message.label);
         break;
+      case "analyzeUser":
+        openUserProfile(message.user);
+        break;
       case "collect":
         collectPost(panel, topic);
         break;
@@ -148,21 +173,7 @@ function loadOnlyAuthor(panel: vscode.WebviewPanel, topicLink: string) {
         }
       });
       detail.replies = onlyAuthorArr;
-      if (Global.context?.globalState.get("showSticker") === "1") {
-        panel.webview.html = NGA.renderPage("topic-spic.html", {
-          topic: detail,
-          // topicYml: yaml.safeDump(detail),
-          contextPath: Global.getWebViewContextPath(panel.webview),
-          titleHeadingClass: _getTopicTitleHeadingClass(),
-        });
-      } else {
-        panel.webview.html = NGA.renderPage("topic.html", {
-          topic: detail,
-          // topicYml: yaml.safeDump(detail),
-          contextPath: Global.getWebViewContextPath(panel.webview),
-          titleHeadingClass: _getTopicTitleHeadingClass(),
-        });
-      }
+      _renderTopic(panel, detail);
 
       // } catch (err) {
       //   console.log(err);
@@ -210,19 +221,7 @@ function loadTopicInPanel(
   // 获取详情数据
   NGA.getTopicDetail(topicLink, false, page)
     .then((detail) => {
-      if (Global.context?.globalState.get("showSticker") === "1") {
-        panel.webview.html = NGA.renderPage("topic-spic.html", {
-          topic: detail,
-          contextPath: Global.getWebViewContextPath(panel.webview),
-          titleHeadingClass: _getTopicTitleHeadingClass(),
-        });
-      } else {
-        panel.webview.html = NGA.renderPage("topic.html", {
-          topic: detail,
-          contextPath: Global.getWebViewContextPath(panel.webview),
-          titleHeadingClass: _getTopicTitleHeadingClass(),
-        });
-      }
+      _renderTopic(panel, detail);
     })
     .catch((err: Error) => {
       console.error(err);

@@ -3,9 +3,12 @@ import * as iconvlite from "iconv-lite";
 import { Node } from "./models/node";
 import { ProxySetting } from "./models/proxySetting";
 import { NodePage } from "./models/nodePage";
+import { ModelConfig } from "./models/modelConfig";
 
 export default class Global {
   static ngaURL = "bbs.nga.cn";
+
+  private static readonly modelApiKeySecret = "modelApiKey";
 
   static context: ExtensionContext | undefined;
 
@@ -114,6 +117,55 @@ export default class Global {
 
   static setTopicTitleHeading(heading: string) {
     this.context?.globalState.update("topicTitleHeading", heading);
+  }
+
+  static getTopicTheme(): string {
+    const theme = this.context?.globalState.get<string>("topicTheme") || "editor";
+    if (theme === "diff") {
+      this.setTopicTheme("editor");
+      return "editor";
+    }
+    return ["editor", "source", "terminal"].includes(theme) ? theme : "editor";
+  }
+
+  static setTopicTheme(theme: string) {
+    if (!["editor", "source", "terminal"].includes(theme)) {
+      return;
+    }
+    this.context?.globalState.update("topicTheme", theme);
+  }
+
+  static getModelConfig(): ModelConfig {
+    return {
+      baseUrl: this.context?.globalState.get<string>("modelBaseUrl") || "",
+      modelName: this.context?.globalState.get<string>("modelName") || "",
+    };
+  }
+
+  static async setModelBaseUrl(baseUrl: string) {
+    await this.context?.globalState.update("modelBaseUrl", baseUrl);
+  }
+
+  static async setModelName(modelName: string) {
+    await this.context?.globalState.update("modelName", modelName);
+  }
+
+  static async getModelApiKey(): Promise<string | undefined> {
+    return this.context?.secrets.get(this.modelApiKeySecret);
+  }
+
+  static async setModelApiKey(apiKey: string) {
+    if (!this.context) {
+      throw new Error("扩展尚未初始化，无法保存 API Key");
+    }
+    await this.context.secrets.store(this.modelApiKeySecret, apiKey);
+  }
+
+  static async clearModelApiKey() {
+    if (!this.context) {
+      throw new Error("扩展尚未初始化，无法清除 API Key");
+    }
+    await this.context.secrets.delete(this.modelApiKeySecret);
   }
 
   static updateUserLabel(users: any[]) {

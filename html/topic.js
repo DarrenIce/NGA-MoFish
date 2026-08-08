@@ -153,6 +153,9 @@ function AutoResizeImage(maxWidth, maxHeight, objImg) {
 window.addEventListener('message', event => {
   const message = event.data; // The JSON data our extension sent
   switch (message.command) {
+      case 'applyTopicTheme':
+          applyTopicTheme(message.theme, false);
+          break;
       case 'updateLikes':
           console.log('js updateLikes: ', message.reply);
           document.querySelectorAll(`span[pid="${message.reply.pid}"]`).forEach((a) => {

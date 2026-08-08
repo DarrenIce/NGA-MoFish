@@ -19,6 +19,8 @@
 - [x] 打开指定tid
 - [x] 只看楼主（感谢呦哥@Exceedingly0） 
 - [x] 无图模式、小图模式、标准模式（无图模式下点击占位可加载图片）
+- [x] Markdown 编辑器、TypeScript 源码、PowerShell 终端三套 VS Code 风格帖子主题
+- [x] 基于公开历史回帖生成用户画像，支持自定义 OpenAI-compatible 模型
 - [x] 简单的搜索功能，目前仅限搜索前50个主题标题相关的有效内容
 - [x] 一键获取个人收藏的版块（感谢[ys152452](https://github.com/ys152452)PR）
 - [x] 对帖子or回复进行点赞👍
@@ -39,7 +41,15 @@
 2. 打开NGA扩展，点击上方的登录按钮，粘贴刚才复制的cookie在上方的输入提示框中，回车即可
 3. 点击同步按钮，即可同步NGA收藏节点
 4. 添加分区，例如水区的url是`https://bbs.nga.cn/thread.php?fid=-7`，那么水区的fid就是`-7`，点击上方的添加分区按钮，输入`fid=-7`即可添加水区，其他分区也是同理
-5. 根据喜好设定图片模式、帖子数量、是否过滤已读帖子
+5. 根据喜好设定图片模式、帖子主题、标题大小、是否过滤已读帖子
+
+### 用户画像分析
+
+1. 在 NGA 扩展视图右上角打开“设置” → “模型配置”。
+2. 配置 `Base URL` 和 `Model Name`；`Base URL` 可以填写 API 根地址（如 `https://api.example.com/v1`），也可以直接填写完整的 `/chat/completions` 地址。
+3. 按需设置 `API Key`。密钥保存在 VS Code `SecretStorage` 中，不会写入普通配置或传入帖子 Webview；无需鉴权的本地兼容服务可以不设置。
+4. 使用“测试 /chat/completions”真实验证接口、模型名以及 `choices[0].message.content` 响应结构。
+5. 打开帖子后，点击作者名旁的“画像”即可抓取最多 5 页公开历史回帖并生成报告。
 
 ## 反馈
 

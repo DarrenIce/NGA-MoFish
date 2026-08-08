@@ -16,6 +16,7 @@ import { TopicReply } from './models/topicReply';
 import { SearchElement } from './models/searchElement';
 import * as vscode from 'vscode';
 import showStatusBar from './commands/showStatusBar';
+import { NgaQuoteInfo, parseNgaReply, renderNgaMarkup } from './process/ngaMarkup';
 
 /** 按 JSON 字符串转义规则删除字段，避免正则 .*? 在引号内误截断 */
 function stripJsonStringFields(json: string, fieldNames: string[]): string {
@@ -77,6 +78,47 @@ function tryParseJson5(s: string): any {
     } catch (e) {
         return null;
     }
+}
+
+function renderTopicContent(content: string): string {
+    let rendered = renderNgaMarkup(content);
+    if (Global.getStickerMode() !== '0') {
+        rendered = processSmile(rendered);
+    }
+    return rendered;
+}
+
+interface QuoteDisplay {
+    quote: string;
+    quotePid: string;
+    quoteuid: string;
+    quoteuname: string;
+    quoteTime: string;
+}
+
+function applyQuote(target: QuoteDisplay, quote: NgaQuoteInfo | undefined, referencedReply?: TopicReply) {
+    if (!quote && !referencedReply) {
+        return;
+    }
+    target.quotePid = quote?.pid || referencedReply?.pid || '';
+    target.quoteuid = quote?.uid || referencedReply?.user.uid || '';
+    target.quoteuname = quote?.userName || referencedReply?.user.userNmae || '';
+    target.quoteTime = quote?.time || referencedReply?.time || '';
+    target.quote = quote?.content
+        ? renderTopicContent(quote.content)
+        : referencedReply?.content || '';
+}
+
+function buildComment(rawComment: any, users: Map<any, any>): Comment {
+    const comment = new Comment();
+    comment.authorID = '' + rawComment.authorid;
+    const author = users.get(comment.authorID);
+    comment.authorName = author?.userNmae || comment.authorID;
+    comment.time = rawComment.postdate || '';
+
+    const parsedComment = parseNgaReply('' + (rawComment.content || ''));
+    comment.content = renderTopicContent(parsedComment.content);
+    return comment;
 }
 
 // 修复被截断的 JSON：回退到最后一个安全的结构边界，并补齐未闭合的 {} / []，
@@ -244,9 +286,7 @@ export class NGA {
         let r = prepareNgaLiteJsRaw(data);
         r = r.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.cn/attachments')
             .replace(/\[\/img\]/g, '\\">')
-            .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"')
-            .replace(/\[url\]/g, '<a href=\\"')
-            .replace(/\[\/url\]/g, '\\">url</a>');
+            .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"');
         if (Global.getStickerMode() === '0') {
             // 无图模式：不直接移除图片（会丢失URL，无法按需加载）
             // 改为替换成可点击占位，点击后由webview脚本原地加载该图片。
@@ -344,26 +384,17 @@ export class NGA {
         topic.user.uid = '' + js.__R['0'].authorid;
         topic.user.userNmae = js.__U[topic.user.uid].username;
         topic.displayTime = js.__R['0'].postdate || '';
-        topic.content = js.__R['0'].content || '';
-        topic.content = topic.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-        if (Global.getStickerMode() !== '0') {
-            topic.content = processSmile(topic.content);
-        }
+        topic.content = renderTopicContent(js.__R['0'].content || '');
         topic.replyCount = js.__T?.replies || (js.__R ? Object.keys(js.__R).length : 0);
         topic.pages = Math.ceil(topic.replyCount / (range * 20));
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
             let users = _getUserMap(js.__U);
             for (let c in js.__R['0'].comment) {
-                let com = new Comment();
-                com.authorID = js.__R['0'].comment[c].authorid;
-                com.authorName = users.has(com.authorID) ? users.get(com.authorID).userName : com.authorID;
-                com.content = js.__R['0'].comment[c].content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '');
-                com.time = js.__R['0'].comment[c].postdate;
-                topic.comments.push(com);
+                topic.comments.push(buildComment(js.__R['0'].comment[c], users));
             }
         }
-        let pid2reply = new Map();
+        let pid2reply = new Map<string, TopicReply>();
 
         const _getTopicReplies = async (link: string, onlyAuthor: boolean, page: number): Promise<TopicReply[]> => {
             const replies: TopicReply[] = [];
@@ -391,46 +422,20 @@ export class NGA {
                     rep.content = js.__R[j].hasOwnProperty('content') ? ""+js.__R[j].content : ""+js.__R[j].subject;
                     if (js.__R[j].hasOwnProperty('content')) {
                         js.__R[j].content = ""+js.__R[j].content;
-                        if (js.__R[j].hasOwnProperty('reply_to')) {
-                            let rtpid = '' + js.__R[j].reply_to;
-                            if (pid2reply.has(rtpid)) {
-                                rep.quote = pid2reply.get(rtpid).content;
-                                rep.quoteuid = pid2reply.get(rtpid).uid;
-                                rep.quoteuname = pid2reply.get(rtpid).userName;
-                            }
-                            rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, '');
-                        } else if (js.__R[j].content.startsWith('[quote]')) {
-                            if (js.__R[j].content.indexOf('[pid=') !== -1) {
-                                let rtpid = js.__R[j].content.match(/pid=\d+/g)![0].replace('pid=', '');
-                                if (pid2reply.has(rtpid)) {
-                                    rep.quote = pid2reply.get(rtpid).content;
-                                    rep.quoteuid = pid2reply.get(rtpid).uid;
-                                    rep.quoteuname = pid2reply.get(rtpid).userName;
-                                }
-                            } else if (js.__R[j].content.indexOf('[tid=') !== -1) {
-                                rep.quote = '引用主题';
-                            }
-                            
-                            rep.content = rep.content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '').replace(/\[quote\].*\[\/b\]/g, ''); 
-                        }
+                        const parsedReply = parseNgaReply(rep.content);
+                        const replyToPid = parsedReply.quote?.pid
+                            || (js.__R[j].hasOwnProperty('reply_to') ? '' + js.__R[j].reply_to : '');
+                        const referencedReply = replyToPid ? pid2reply.get(replyToPid) : undefined;
+                        applyQuote(rep, parsedReply.quote, referencedReply);
+                        rep.content = parsedReply.content;
                         rep.likes = js.__R[j].score;
-                        // 如果既有回复又有加粗，那是啥情况呢，等一个具体案例
-                        rep.content = rep.content.replace('[b]', '<b>').replace('[/b]', '</b>');
-                        if (Global.getStickerMode() !== '0') {
-                            rep.content = processSmile(rep.content);
-                        }
+                        rep.content = renderTopicContent(rep.content);
                         pid2reply.set(rep.pid, rep);
                     }
 
                     if (js.__R[j].hasOwnProperty('comment')) {
                         for (let c in js.__R[j].comment) {
-                            let com = new Comment();
-                            com.authorID = js.__R[j].comment[c].authorid;
-                            com.authorName = users.has(com.authorID) ? users.get(com.authorID).userName : com.authorID;
-                            com.content = js.__R[j].comment[c].content.replace(/\[quote\].*\[\/quote\]/g, '').replace(/\[b\].*\[\/b\]/g, '');
-                            com.time = js.__R[j].comment[c].postdate;
-                            rep.comments.push(com);
-                            // console.log(com);
+                            rep.comments.push(buildComment(js.__R[j].comment[c], users));
                         }
                     }
 
