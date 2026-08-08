@@ -17,6 +17,7 @@ import { SearchElement } from './models/searchElement';
 import * as vscode from 'vscode';
 import showStatusBar from './commands/showStatusBar';
 import { NgaQuoteInfo, parseNgaReply, renderNgaMarkup } from './process/ngaMarkup';
+import { createNgaUserMap, mergeNgaUserMetadata } from './process/ngaUsers';
 
 /** 按 JSON 字符串转义规则删除字段，避免正则 .*? 在引号内误截断 */
 function stripJsonStringFields(json: string, fieldNames: string[]): string {
@@ -322,26 +323,26 @@ export class NGA {
         if (parsed) {
             return parsed.data;
         }
+        const recoveredAuthenticated = tryParseJson5(repairTruncatedJson(cleaned));
         try {
             // headers.Cookie = '' 可绕过请求拦截器注入的登录 Cookie，走匿名缓存
             const anon = await http.get<string>(url, { responseType: 'arraybuffer', headers: { Cookie: '' } });
             const anonCleaned = NGA.buildLiteInput(anon.data);
             const anonParsed = tryParseJson5(anonCleaned);
             if (anonParsed) {
-                return anonParsed.data;
+                return mergeNgaUserMetadata(anonParsed.data, recoveredAuthenticated?.data);
             }
             // 两份缓存都被截断：取更长的那份修复，尽量多恢复楼层
             const best = ('' + anon.data).length > ('' + res.data).length ? anonCleaned : cleaned;
             const repairedBest = tryParseJson5(repairTruncatedJson(best));
             if (repairedBest) {
-                return repairedBest.data;
+                return mergeNgaUserMetadata(repairedBest.data, recoveredAuthenticated?.data);
             }
         } catch (e) {
             // 匿名兜底失败（如网络异常或需要登录），继续走本地修复
         }
-        const repaired = tryParseJson5(repairTruncatedJson(cleaned));
-        if (repaired) {
-            return repaired.data;
+        if (recoveredAuthenticated) {
+            return recoveredAuthenticated.data;
         }
         throw new Error('帖子数据解析失败：NGA 返回的数据被截断，匿名重取仍失败');
     }
@@ -351,22 +352,7 @@ export class NGA {
         let range = 5;
 
         const _getUserMap = (jsUsers: any): Map<any, any> => {
-            let globalUsers = Global.getUserLabel();
-            let userMap = NGA.userArray2Map(globalUsers);
-            console.log('before userMap.values(): ', Array.from(userMap.values()));
-            for (let val in jsUsers) {
-                if (userMap.has(val)) {
-                    continue;
-                }
-                let u = new User();
-                u.uid = '' + jsUsers[val]?.uid;
-                u.userNmae = jsUsers[val]?.username;
-                u.regDate = jsUsers[val]?.regdate;
-                u.labels = [];
-                userMap.set(val, u);
-            }
-            console.log('after userMap.values(): ', Array.from(userMap.values()));
-            return userMap;
+            return createNgaUserMap(jsUsers, Global.getUserLabel());
         };
 
         topic.onlyAuthor = onlyAuthor;
@@ -381,17 +367,18 @@ export class NGA {
             title: js.__F?.name || ''
         };
 
+        const firstPageUsers = _getUserMap(js.__U);
         topic.user.uid = '' + js.__R['0'].authorid;
-        topic.user.userNmae = js.__U[topic.user.uid].username;
+        topic.user.userNmae = firstPageUsers.get(topic.user.uid)?.userNmae || topic.user.uid;
+        topic.user.labels = firstPageUsers.get(topic.user.uid)?.labels || [];
         topic.displayTime = js.__R['0'].postdate || '';
         topic.content = renderTopicContent(js.__R['0'].content || '');
         topic.replyCount = js.__T?.replies || (js.__R ? Object.keys(js.__R).length : 0);
         topic.pages = Math.ceil(topic.replyCount / (range * 20));
         topic.likes = js.__R['0'].score;
         if (js.__R['0'].hasOwnProperty('comment')) {
-            let users = _getUserMap(js.__U);
             for (let c in js.__R['0'].comment) {
-                topic.comments.push(buildComment(js.__R['0'].comment[c], users));
+                topic.comments.push(buildComment(js.__R['0'].comment[c], firstPageUsers));
             }
         }
         let pid2reply = new Map<string, TopicReply>();

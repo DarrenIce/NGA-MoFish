@@ -11,6 +11,7 @@
 - 修复回复正文内部多个引用、普通 URL、带标题 URL 以及折叠内容无法正确渲染的问题
 - 完善主楼和回复贴条渲染，仅展示贴条用户的名称、UID、时间和贴条正文
 - 增强帖子 JSON 解析与回复关联逻辑，统一主楼、回复、引用、贴条的内容处理
+- 修复登录态帖子数据被截断后，匿名缓存兜底只显示 UID 的问题；合并已恢复的登录态用户资料，并在刷新用户名时保留已有用户标签
 - 新增用户画像分析功能，可抓取最多 5 页公开历史回帖，并限制总输入和单条回帖长度；分析前会移除引用内容，避免错误归因
 - 新增 OpenAI-compatible 模型配置，支持 Base URL、Model Name、API Key；API Key 使用 VS Code SecretStorage 保存
 - 新增 `/chat/completions` 连接测试，兼容 API 根地址和完整接口地址，并支持 `content`、`reasoning_content` 响应及 API Key 错误脱敏
