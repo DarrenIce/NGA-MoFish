@@ -219,6 +219,30 @@ let smile_pg = {
 
 type Dict = {[k: string]: any};
 
+export interface NgaSmile {
+    group: string;
+    name: string;
+    code: string;
+    file: string;
+}
+
+/** 返回编辑器可用的表情目录，浏览器只提交 BBCode，不直接上传图片。 */
+export function getSmileCatalog(): NgaSmile[] {
+    const groups: Array<[string, Dict]> = [
+        ['ac', smile_ac],
+        ['a2', smile_a2],
+        ['pst', smile_pst],
+        ['dt', smile_dt],
+        ['pg', smile_pg],
+    ];
+    return groups.reduce((result: NgaSmile[], [group, values]) => {
+        Object.keys(values).forEach((name) => {
+            result.push({ group, name, file: values[name], code: `[s:${group}:${name}]` });
+        });
+        return result;
+    }, []);
+}
+
 export function processSmile(content: string): string {
     let rex = content.match(/\[s\:ac\:.+?\]/g);
     if (rex !== null) {

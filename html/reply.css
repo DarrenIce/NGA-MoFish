@@ -1,0 +1,257 @@
+.reply-composer {
+  margin: 20px 0;
+  padding: 14px;
+  border: 1px solid var(--vscode-panel-border, var(--vscode-editorIndentGuide-background));
+  border-radius: 6px;
+  background: var(--vscode-editor-background);
+}
+
+.reply-composer-heading,
+.reply-submit-row,
+.reply-mode-row,
+.reply-format-toolbar,
+.reply-item-actions {
+  display: flex;
+  align-items: center;
+}
+
+.reply-composer-heading {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.reply-composer-heading h2 {
+  display: inline;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.reply-target-label,
+.reply-status {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.reply-status.is-error {
+  color: var(--vscode-errorForeground);
+}
+
+.reply-view-tabs {
+  display: inline-flex;
+  min-width: 112px;
+  height: 28px;
+  border: 1px solid var(--vscode-panel-border, var(--vscode-editorIndentGuide-background));
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.reply-view-tabs button,
+.reply-format-toolbar button,
+.reply-item-actions button,
+.reply-smile-grid button {
+  border: 0;
+  color: var(--vscode-foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+.reply-view-tabs button {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.reply-view-tabs button.is-active {
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+.reply-mode-row {
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.reply-mode-row select,
+.reply-select-tool select,
+.reply-smile-search {
+  height: 28px;
+  border: 1px solid var(--vscode-dropdown-border, var(--vscode-editorIndentGuide-background));
+  border-radius: 3px;
+  color: var(--vscode-dropdown-foreground, var(--vscode-foreground));
+  background: var(--vscode-dropdown-background, var(--vscode-editor-background));
+}
+
+.reply-mode-row select {
+  min-width: 128px;
+  padding: 0 6px;
+}
+
+.reply-format-toolbar {
+  min-height: 34px;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 3px;
+  border: 1px solid var(--vscode-panel-border, var(--vscode-editorIndentGuide-background));
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+}
+
+.reply-format-toolbar button {
+  min-width: 30px;
+  height: 27px;
+  padding: 0 7px;
+  border-radius: 3px;
+}
+
+.reply-format-toolbar button:hover,
+.reply-item-actions button:hover,
+.reply-smile-grid button:hover {
+  background: var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground));
+}
+
+.reply-select-tool > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.reply-select-tool select {
+  max-width: 76px;
+  padding: 0 4px;
+}
+
+#replyBox {
+  display: block;
+  width: 100%;
+  min-height: 150px;
+  padding: 10px;
+  resize: vertical;
+  border: 1px solid var(--vscode-input-border, var(--vscode-editorIndentGuide-background));
+  border-radius: 0 0 4px 4px;
+  outline: none;
+  color: var(--vscode-input-foreground, var(--vscode-foreground));
+  background: var(--vscode-input-background, var(--vscode-editor-background));
+  font: 14px/1.6 var(--vscode-editor-font-family, monospace);
+}
+
+#replyBox:focus {
+  border-color: var(--vscode-focusBorder);
+}
+
+.reply-preview {
+  min-height: 190px;
+  padding: 12px;
+  border: 1px solid var(--vscode-panel-border, var(--vscode-editorIndentGuide-background));
+  border-radius: 4px;
+  background: var(--vscode-textBlockQuote-background, var(--vscode-editor-background));
+}
+
+.reply-preview-empty {
+  color: var(--vscode-descriptionForeground);
+}
+
+.reply-preview-smile,
+.reply-smile-grid img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  /* NGA 的部分表情是深色线稿 + 透明背景，深色主题下需要浅色底才能辨认。 */
+  background-color: #fffafa;
+  border-radius: 3px;
+}
+
+.reply-smile-panel {
+  max-height: 260px;
+  padding: 8px;
+  overflow: auto;
+  border: 1px solid var(--vscode-panel-border, var(--vscode-editorIndentGuide-background));
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+}
+
+.reply-smile-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  padding: 0 8px;
+  margin-bottom: 8px;
+}
+
+.reply-smile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 4px;
+}
+
+.reply-smile-grid button {
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 3px;
+}
+
+.reply-submit-row {
+  min-height: 38px;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.reply-status {
+  margin-right: auto;
+}
+
+.reply-submit {
+  min-width: 88px;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  cursor: pointer;
+}
+
+.reply-submit:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.reply-submit:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.reply-item-actions {
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.reply-item-actions button {
+  min-width: 40px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 3px;
+  color: var(--vscode-textLink-foreground);
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .reply-composer-heading {
+    align-items: flex-start;
+  }
+
+  .reply-target-label {
+    display: block;
+    margin-top: 4px;
+  }
+
+  .reply-view-tabs {
+    flex: 0 0 112px;
+  }
+}

@@ -11,6 +11,12 @@ import { TopicReply } from "../models/topicReply";
 import axios from "axios";
 import { syncCollectPosts } from "./syncCollect";
 import { openUserProfile } from "./userProfile";
+import {
+  buildNgaQuoteContent,
+  buildNgaReplyHeader,
+  NgaReplyOperation,
+} from "../process/ngaReply";
+import { getSmileCatalog } from "../process/smile";
 const yaml = require("js-yaml");
 
 /**
@@ -35,15 +41,58 @@ function _getTopicTitleHeadingClass(): string {
     : "topic-title-h1";
 }
 
+function _serializeForScript(value: unknown): string {
+  const json = JSON.stringify(value);
+  return (json === undefined ? 'null' : json)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
 function _renderTopic(panel: vscode.WebviewPanel, detail: TopicDetail) {
   const template = Global.getStickerMode() === "1"
     ? "topic-spic.html"
     : "topic.html";
+  const smiles = getSmileCatalog();
+  const replyTargets: { [pid: string]: unknown } = {};
+  const addReplyTarget = (
+    pid: string,
+    floor: string,
+    uid: string,
+    userName: string,
+    time: string,
+    rawContent: string,
+  ) => {
+    replyTargets[pid] = {
+      pid,
+      floor,
+      time,
+      user: { uid, userNmae: userName },
+      quoteContent: buildNgaQuoteContent(String(detail.id), pid, floor, uid, userName, time, rawContent),
+      replyHeader: buildNgaReplyHeader(String(detail.id), pid, floor, uid, userName, time),
+    };
+  };
+  addReplyTarget('0', '0', detail.user.uid, detail.user.userNmae, detail.displayTime, detail.rawContent);
+  detail.replies.forEach((reply) => {
+    addReplyTarget(
+      reply.pid,
+      reply.floor,
+      reply.user.uid,
+      reply.user.userNmae,
+      reply.time,
+      reply.rawContent,
+    );
+  });
   panel.webview.html = NGA.renderPage(template, {
     topic: detail,
     contextPath: Global.getWebViewContextPath(panel.webview),
     titleHeadingClass: _getTopicTitleHeadingClass(),
     topicTheme: Global.getTopicTheme(),
+    topicJson: _serializeForScript(detail),
+    smilesJson: _serializeForScript(smiles),
+    replyTargetsJson: _serializeForScript(replyTargets),
   });
 }
 
@@ -143,12 +192,50 @@ export default function topicItemClick(item: TreeNode) {
       case "collect":
         collectPost(panel, topic);
         break;
+      case "postReply":
+        postReplyFromPanel(panel, item.link, topic, message);
+        break;
       default:
         break;
     }
   });
   console.log(item.link);
   loadTopicInPanel(panel, item.link, 1);
+}
+
+async function postReplyFromPanel(
+  panel: vscode.WebviewPanel,
+  topicLink: string,
+  topic: TopicDetail,
+  message: any,
+) {
+  const operation = message.action as NgaReplyOperation;
+  if (!['reply', 'quote', 'comment'].includes(operation)) {
+    panel.webview.postMessage({ command: 'replyError', message: '不支持的回帖类型' });
+    return;
+  }
+  const content = typeof message.content === 'string' ? message.content.trim() : '';
+  if (!content) {
+    panel.webview.postMessage({ command: 'replyError', message: '回帖内容不能为空' });
+    return;
+  }
+  const pid = typeof message.pid === 'string' && /^\d+$/.test(message.pid) ? message.pid : '0';
+  panel.webview.postMessage({ command: 'replySending' });
+  try {
+    await NGA.postReply({
+      tid: String(topic.id),
+      pid,
+      operation,
+      content,
+    });
+    vscode.window.showInformationMessage('回帖成功');
+    panel.webview.postMessage({ command: 'replySuccess' });
+    loadTopicInPanel(panel, topicLink, Number(topic.pageNow) || 1);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : '未知错误';
+    console.error('NGA post reply failed:', error);
+    panel.webview.postMessage({ command: 'replyError', message: detail || '回帖失败' });
+  }
 }
 
 /**

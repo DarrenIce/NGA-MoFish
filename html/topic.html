@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="{{ contextPath }}/html/common.css" />
   <link rel="stylesheet" href="{{ contextPath }}/html/topic.css" />
   <link rel="stylesheet" href="{{ contextPath }}/html/topic-themes.css" />
+  <link rel="stylesheet" href="{{ contextPath }}/html/reply.css" />
 </head>
 
 <body data-topic-theme="{{ topicTheme }}" data-thread-id="{{ topic.id }}">
@@ -101,11 +102,77 @@
 
     <div class="topic-toolbar">
       <a class="op refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.pageNow %>});" title="刷新页面">刷新页面</a>
+      <a class="op" href="javascript:;" onclick="setReplyMode('reply', '0');" title="回复主题">回帖</a>
+      <a class="op" href="javascript:;" onclick="setReplyMode('quote', '0');" title="引用主楼">引用</a>
+      <a class="op" href="javascript:;" onclick="setReplyMode('comment', '0');" title="给主楼贴条">贴条</a>
       <!-- <span class="text count">
         {{topic.likes}} 👍
       </span> -->
       <span><a class="thanks" href="javascript:;" onclick="vsPostMessage('like',  <%= {reply:'0', __topic: topic } %>);" title="赞同">👍 </a><span pid="0">{{ topic.likes }}</span></span>
     </div>
+
+    <hr />
+
+    <section class="reply-composer" id="replyComposer" aria-labelledby="replyComposerTitle">
+      <div class="reply-composer-heading">
+        <div>
+          <h2 id="replyComposerTitle">回帖</h2>
+          <span id="replyTargetLabel" class="reply-target-label">普通回帖</span>
+        </div>
+        <div class="reply-view-tabs" role="tablist" aria-label="编辑模式">
+          <button id="replyEditTab" class="is-active" type="button" role="tab" aria-selected="true">编辑</button>
+          <button id="replyPreviewTab" type="button" role="tab" aria-selected="false">预览</button>
+        </div>
+      </div>
+      <div class="reply-mode-row">
+        <label for="replyMode">类型</label>
+        <select id="replyMode">
+          <option value="reply">普通回帖</option>
+          <option value="quote">引用回帖</option>
+          <option value="reply-to">回复回帖</option>
+          <option value="comment">贴条回帖</option>
+        </select>
+      </div>
+      <div id="replyEditPane">
+        <div class="reply-format-toolbar" role="toolbar" aria-label="BBCode 格式">
+          <button type="button" data-bbcode="bold" title="加粗"><strong>B</strong></button>
+          <button type="button" data-bbcode="delete" title="删除线"><del>S</del></button>
+          <label class="reply-select-tool" title="文字颜色">
+            <span>颜色</span>
+            <select id="replyColor" aria-label="文字颜色">
+              <option value="">颜色</option>
+              <option value="red">红色</option>
+              <option value="orange">橙色</option>
+              <option value="green">绿色</option>
+              <option value="blue">蓝色</option>
+              <option value="purple">紫色</option>
+              <option value="gray">灰色</option>
+            </select>
+          </label>
+          <label class="reply-select-tool" title="字号">
+            <span>字号</span>
+            <select id="replySize" aria-label="字号">
+              <option value="">字号</option>
+              <option value="80%">80%</option>
+              <option value="90%">90%</option>
+              <option value="110%">110%</option>
+              <option value="120%">120%</option>
+              <option value="150%">150%</option>
+              <option value="200%">200%</option>
+            </select>
+          </label>
+          <button type="button" data-bbcode="collapse" title="折叠内容">折叠</button>
+          <button id="replySmileButton" type="button" title="插入表情" aria-expanded="false">表情</button>
+        </div>
+        <div id="replySmilePanel" class="reply-smile-panel" hidden></div>
+        <textarea id="replyBox" rows="8" maxlength="60000" placeholder="输入回帖内容"></textarea>
+      </div>
+      <div id="replyPreviewPane" class="reply-preview topic-content" role="tabpanel" hidden></div>
+      <div class="reply-submit-row">
+        <span id="replyStatus" class="reply-status" role="status"></span>
+        <button id="replySubmit" class="reply-submit" type="button">发送回帖</button>
+      </div>
+    </section>
 
     <hr />
 
@@ -159,6 +226,11 @@
           {{/if}}
           {{/if}}
           <div class="topic-content">{{@ $value.content}}</div>
+          <div class="reply-item-actions">
+            <button type="button" onclick="setReplyMode('reply-to', '{{ $value.pid }}');">回复</button>
+            <button type="button" onclick="setReplyMode('quote', '{{ $value.pid }}');">引用</button>
+            <button type="button" onclick="setReplyMode('comment', '{{ $value.pid }}');">贴条</button>
+          </div>
           {{if $value.comments.length}}
           <hr />
           <p>贴条</p>
@@ -216,9 +288,12 @@
 
   <script src="{{ contextPath }}/html/lib/js-yaml.min.js"></script>
   <script>
-    var __topic = topic;
+    var __topic = {{@ topicJson}};
+    var __smiles = {{@ smilesJson}};
+    var __replyTargets = {{@ replyTargetsJson}};
   </script>
   <script src="{{ contextPath }}/html/topic.js"></script>
+  <script src="{{ contextPath }}/html/reply.js"></script>
   <script src="{{ contextPath }}/html/topic-theme.js"></script>
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 </body>

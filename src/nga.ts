@@ -18,6 +18,8 @@ import * as vscode from 'vscode';
 import showStatusBar from './commands/showStatusBar';
 import { NgaQuoteInfo, parseNgaReply, renderNgaMarkup } from './process/ngaMarkup';
 import { createNgaUserMap, mergeNgaUserMetadata } from './process/ngaUsers';
+import { buildNgaReplyParams, NgaReplyOperation } from './process/ngaReply';
+import { LoginRequiredError } from './error';
 
 /** 按 JSON 字符串转义规则删除字段，避免正则 .*? 在引号内误截断 */
 function stripJsonStringFields(json: string, fieldNames: string[]): string {
@@ -79,6 +81,24 @@ function tryParseJson5(s: string): any {
     } catch (e) {
         return null;
     }
+}
+
+function getNgaErrorMessage(error: any): string {
+    if (typeof error === 'string') {
+        return error;
+    }
+    if (Array.isArray(error)) {
+        return error.map((item) => getNgaErrorMessage(item)).find(Boolean) || 'NGA 回帖失败';
+    }
+    if (error && typeof error === 'object') {
+        const preferred = error['0'] || error.message || error.info;
+        if (preferred) {
+            return getNgaErrorMessage(preferred);
+        }
+        const first = Object.keys(error).map((key) => getNgaErrorMessage(error[key])).find(Boolean);
+        return first || 'NGA 回帖失败';
+    }
+    return 'NGA 回帖失败';
 }
 
 function renderTopicContent(content: string): string {
@@ -361,7 +381,8 @@ export class NGA {
         topic.user.userNmae = firstPageUsers.get(topic.user.uid)?.userNmae || topic.user.uid;
         topic.user.labels = firstPageUsers.get(topic.user.uid)?.labels || [];
         topic.displayTime = js.__R['0'].postdate || '';
-        topic.content = renderTopicContent(js.__R['0'].content || '');
+        topic.rawContent = '' + (js.__R['0'].content || '');
+        topic.content = renderTopicContent(topic.rawContent);
         topic.replyCount = js.__T?.replies || (js.__R ? Object.keys(js.__R).length : 0);
         topic.pages = Math.ceil(topic.replyCount / (range * 20));
         topic.likes = js.__R['0'].score;
@@ -395,7 +416,8 @@ export class NGA {
                     rep.user.labels = users.has(rep.user.uid) ? users.get(rep.user.uid).labels : [];
                     rep.time = js.__R[j].postdate;
                     rep.floor = js.__R[j].lou;
-                    rep.content = js.__R[j].hasOwnProperty('content') ? ""+js.__R[j].content : ""+js.__R[j].subject;
+                    rep.rawContent = js.__R[j].hasOwnProperty('content') ? ""+js.__R[j].content : ""+js.__R[j].subject;
+                    rep.content = rep.rawContent;
                     if (js.__R[j].hasOwnProperty('content')) {
                         js.__R[j].content = ""+js.__R[j].content;
                         const parsedReply = parseNgaReply(rep.content);
@@ -433,6 +455,66 @@ export class NGA {
         const templatePath = path.join(Global.context!.extensionPath, 'html', page);
         const html = template(templatePath, data);
         return html;
+    }
+
+    static async postReply(request: {
+        tid: string;
+        pid: string;
+        operation: NgaReplyOperation;
+        content: string;
+    }): Promise<void> {
+        if (!Global.getCookie()) {
+            throw new LoginRequiredError('请先登录 NGA 后再回帖');
+        }
+        const params = buildNgaReplyParams(request);
+        const qs = require('qs');
+        const queryParams: { [key: string]: string } = {
+            ...params,
+            __inchst: 'UTF8',
+            lite: 'js',
+            __output: '8',
+        };
+        Object.keys(queryParams).forEach((key) => {
+            if (queryParams[key] === '') {
+                delete queryParams[key];
+            }
+        });
+        const query = qs.stringify(queryParams);
+        const baseUrl = `https://${Global.getNgaDomain()}`;
+        const response = await http.post(
+            `${baseUrl}/post.php?${query}`,
+            '',
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    Referer: `${baseUrl}/read.php?tid=${request.tid}`,
+                },
+                responseType: 'arraybuffer',
+            },
+        );
+        const raw = '' + response.data;
+        const body = raw.replace(/^window\.script_muti_get_var_store=/, '').trim();
+        let parsed: any = null;
+        try {
+            parsed = JSON5.parse(body);
+        } catch (_error) {
+            // post.php 也可能返回 HTML/XML，交给下面的文本错误检测。
+        }
+        if (parsed) {
+            const error = parsed?.error;
+            if (error) {
+                throw new Error(getNgaErrorMessage(error));
+            }
+            if (parsed?.data?.error) {
+                throw new Error(getNgaErrorMessage(parsed.data.error));
+            }
+            return;
+        }
+        // HTML/XML 响应没有统一结构，服务端失败时通常会直接返回中文提示。
+        const failure = /(帐号权限不足|账号权限不足|发帖或回复时间超过限制|回复时间超过限制|操作失败|权限不足|请先登录)/i.exec(body);
+        if (failure) {
+            throw new Error(failure[1]);
+        }
     }
 
     /**

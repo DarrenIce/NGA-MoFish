@@ -10,6 +10,8 @@ export class TopicReply {
     public floor: string = '';
     // 回复内容
     public content: string = '';
+    // 原始 BBCode 内容，用于引用回帖时保留 NGA 标记
+    public rawContent: string = '';
     // 点赞数
     public likes: number = 0;
     public quote: string = '';
