@@ -17,6 +17,11 @@ const SAFE_COLORS: { [name: string]: string } = {
 };
 
 const UNSAFE_HTML_CODE_POINTS = [34, 38, 39, 60, 62];
+const NGA_ATTACHMENT_BASE_URL = "https://img.nga.cn/attachments";
+
+export interface NgaMarkupOptions {
+  showImages?: boolean;
+}
 
 export interface NgaQuoteInfo {
   pid: string;
@@ -93,9 +98,19 @@ function sanitizeUrl(value: string): string | undefined {
   return undefined;
 }
 
+function sanitizeImageUrl(value: string): string | undefined {
+  const url = value.trim().replace(/&amp;/gi, "&");
+  if (/^\.\/[^\s<>"']+$/i.test(url)) {
+    return `${NGA_ATTACHMENT_BASE_URL}/${url.slice(2)}`;
+  }
+  return sanitizeUrl(url);
+}
+
 function renderLink(url: string, text: string): string {
   const safeUrl = sanitizeUrl(url);
-  const safeText = escapeHtmlText(text.trim() || url.trim());
+  const linkText = text.trim() || url.trim();
+  const imageMarkup = /^\[img\][\s\S]*?\[\/img\]$/i.test(linkText);
+  const safeText = imageMarkup ? linkText : escapeHtmlText(linkText);
   if (!safeUrl) {
     return safeText;
   }
@@ -109,12 +124,29 @@ function renderLinks(content: string): string {
     .replace(/\[url\]([\s\S]*?)\[\/url\]/gi, (_match, url: string) => renderLink(url, url));
 }
 
+function renderImages(content: string, showImages: boolean): string {
+  return content.replace(/\[img\]([\s\S]*?)\[\/img\]/gi, (_match, url: string) => {
+    const safeUrl = sanitizeImageUrl(url);
+    if (!safeUrl) {
+      return escapeHtmlText(url.trim());
+    }
+    const src = escapeHtmlAttribute(safeUrl);
+    if (!showImages) {
+      return `<span class="nga-img-placeholder" data-src="${src}">[图片] 点击加载</span>`;
+    }
+    return `<img class="nga-image" style="background-color: #FFFAFA" src="${src}" alt="帖子图片">`;
+  });
+}
+
 function renderInlineMarkup(content: string): string {
   let result = content
     .replace(/\[b\]/gi, "<strong>")
     .replace(/\[\/b\]/gi, "</strong>")
+    .replace(/\[u\]/gi, "<u>")
+    .replace(/\[\/u\]/gi, "</u>")
     .replace(/\[del\]/gi, "<del>")
-    .replace(/\[\/del\]/gi, "</del>");
+    .replace(/\[\/del\]/gi, "</del>")
+    .replace(/\[h\]\s*\[\/h\]/gi, '<hr class="nga-horizontal-rule">');
   let previous = "";
   while (result !== previous) {
     previous = result;
@@ -244,9 +276,10 @@ export function parseNgaReply(content: string): ParsedNgaReply {
   return { content: remaining, quote: parsedHeader.quote };
 }
 
-export function renderNgaMarkup(content: string): string {
+export function renderNgaMarkup(content: string, options: NgaMarkupOptions = {}): string {
   const decoded = decodeNumericEntities(content || "");
   const quotes = renderEmbeddedQuotes(decoded);
   const links = renderLinks(quotes);
-  return renderCollapses(renderTables(renderInlineMarkup(links)));
+  const images = renderImages(links, options.showImages !== false);
+  return renderCollapses(renderTables(renderInlineMarkup(images)));
 }

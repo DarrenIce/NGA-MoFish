@@ -82,8 +82,9 @@ function tryParseJson5(s: string): any {
 }
 
 function renderTopicContent(content: string): string {
-    let rendered = renderNgaMarkup(content);
-    if (Global.getStickerMode() !== '0') {
+    const showImages = Global.getStickerMode() !== '0';
+    let rendered = renderNgaMarkup(content, { showImages });
+    if (showImages) {
         rendered = processSmile(rendered);
     }
     return rendered;
@@ -284,19 +285,7 @@ export class NGA {
         }
     }    
     static buildLiteInput(data: string): string {
-        let r = prepareNgaLiteJsRaw(data);
-        r = r.replace(/\[img\]\./g, '<img style=\\"background-color: #FFFAFA\\" src=\\"https://img.nga.cn/attachments')
-            .replace(/\[\/img\]/g, '\\">')
-            .replace(/\[img\]/g, '<img style=\\"background-color: #FFFAFA\\" src=\\"');
-        if (Global.getStickerMode() === '0') {
-            // 无图模式：不直接移除图片（会丢失URL，无法按需加载）
-            // 改为替换成可点击占位，点击后由webview脚本原地加载该图片。
-            r = r.replace(
-                /<img\b[^>]*?src=\\"([^\\"]+)\\"[^>]*?>/g,
-                (_m, src) => `<span class=\\"nga-img-placeholder\\" data-src=\\"${src}\\">[图片] 点击加载</span>`
-            );
-        }
-        return r;
+        return prepareNgaLiteJsRaw(data);
     }
 
     static parseJson(data: string): any {

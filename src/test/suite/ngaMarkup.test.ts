@@ -79,4 +79,38 @@ suite('NGA markup rendering', () => {
 		assert.ok(rendered.includes('<del>删除</del>'));
 		assert.ok(rendered.includes('<summary>展开内容</summary>'));
 	});
+
+	test('renders underline, horizontal rules and nested attachment images', () => {
+		const rendered = renderNgaMarkup(
+			'[b][u]原文链接[/u][/b]<br/>[h][/h]<br/>'
+			+ '[table][tr][td]'
+			+ '[url=./mon_202608/07/axtzQ69-41fuK1fT3cSz8-jo.webp]'
+			+ '[img]./mon_202608/07/axtzQ69-41fuK1fT3cSz8-jo.webp[/img]'
+			+ '[/url][/td][/tr][/table]'
+		);
+
+		assert.ok(rendered.includes('<strong><u>原文链接</u></strong>'));
+		assert.ok(rendered.includes('<hr class="nga-horizontal-rule">'));
+		assert.ok(rendered.includes('<table class="nga-table">'));
+		assert.ok(rendered.includes(
+			'<img class="nga-image" style="background-color: #FFFAFA" '
+			+ 'src="https://img.nga.cn/attachments/mon_202608/07/axtzQ69-41fuK1fT3cSz8-jo.webp" alt="帖子图片">'
+		));
+		assert.strictEqual(rendered.includes('&lt;img'), false);
+		assert.strictEqual(rendered.includes('[img]'), false);
+	});
+
+	test('renders attachment placeholders when images are disabled', () => {
+		const rendered = renderNgaMarkup(
+			'[img]./mon_202608/07/axtzQ69-abddK16T3cSxn-ix.webp[/img]',
+			{ showImages: false }
+		);
+
+		assert.strictEqual(
+			rendered,
+			'<span class="nga-img-placeholder" '
+			+ 'data-src="https://img.nga.cn/attachments/mon_202608/07/axtzQ69-abddK16T3cSxn-ix.webp">'
+			+ '[图片] 点击加载</span>'
+		);
+	});
 });
