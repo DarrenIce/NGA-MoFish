@@ -19,6 +19,7 @@ import showStatusBar from './commands/showStatusBar';
 import { NgaQuoteInfo, parseNgaReply, renderNgaMarkup } from './process/ngaMarkup';
 import { createNgaUserMap, mergeNgaUserMetadata } from './process/ngaUsers';
 import { buildNgaReplyParams, NgaReplyOperation } from './process/ngaReply';
+import { filterUniqueSearchResults } from './process/searchPaging';
 import { LoginRequiredError } from './error';
 
 /** 按 JSON 字符串转义规则删除字段，避免正则 .*? 在引号内误截断 */
@@ -525,10 +526,11 @@ export class NGA {
      */
     static async search(q: string, from = 0, size = 20): Promise<SearchElement[]> {
         const se: SearchElement[] = [];
+        const seenTopicIds = new Set<string>();
         let pass = 0;
         let count = 0;
         for (let i =1; i <= 1000; i++) {
-            console.log(`https://${Global.getNgaDomain()}/thread.php?key=${q}&page=${i}&lite=js&noprefix`)
+            console.log(`https://${Global.getNgaDomain()}/thread.php?key=${q}&page=${i}&lite=js&noprefix`);
             const res = await http.get<string>(encodeURI(`https://${Global.getNgaDomain()}/thread.php?key=${q}&page=${i}&lite=js&noprefix`), {
                 headers: {
                     Cookie: Global.getCookie()
@@ -537,8 +539,13 @@ export class NGA {
             });
             // let j = res.data.replace('window.script_muti_get_var_store=', '');
             let js = JSON.parse(res.data).data;
-            for (let val in js.__T) {
-                const t = js.__T[val];
+            const topics = js?.__T || {};
+            const pageTopics = Object.keys(topics).map((topicKey) => topics[topicKey]);
+            const uniqueTopics = filterUniqueSearchResults(pageTopics, seenTopicIds, (topic) => topic?.tid);
+            if (!uniqueTopics.length) {
+                break;
+            }
+            for (const t of uniqueTopics) {
                 if (t.subject === "帐号权限不足") {
                      continue;
                 }

@@ -4,73 +4,144 @@ import * as vscode from 'vscode';
 import topicItemClick from './topicItemClick';
 import Global from '../global';
 import { SearchElement } from '../models/searchElement';
+import { getSearchPageOffset, splitSearchPage } from '../process/searchPaging';
 
-/**上次的搜索结果 */
-var _lastSearchList: SearchElement[] | undefined = undefined;
+const SEARCH_PAGE_SIZE = 50;
 
-/**
- * 登录逻辑
- * @returns 返回是否成功登录成功
- */
+interface SearchState {
+  query: string;
+  page: number;
+  results: SearchElement[];
+  hasNext: boolean;
+}
+
+interface SearchQuickPickItem extends vscode.QuickPickItem {
+  action: 'topic' | 'previous' | 'next';
+  topic?: SearchElement;
+}
+
+/** 上次打开的搜索结果页。 */
+let lastSearchState: SearchState | undefined;
+
 export default async function search() {
-  // 如果已经搜索过，直接打开上次的搜索结果
-  if (_lastSearchList) {
-    showQuickPick(_lastSearchList);
+  if (lastSearchState) {
+    await showQuickPick(lastSearchState);
     return;
   }
 
-  showInoutBox();
+  await showInputBox();
 }
 
-async function showInoutBox() {
-  // 输入搜索关键词
-  let q = await vscode.window.showInputBox({
+async function showInputBox() {
+  let query = await vscode.window.showInputBox({
     placeHolder: '搜索帖子',
     prompt: '请输入查询的关键字'
   });
-  // 如果用户撤销输入，如ESC，则为undefined
-  if (q === undefined) {
+  if (query === undefined) {
     return;
   }
-  q = (q || '').trim();
-  if (!q.length) {
+  query = query.trim();
+  if (!query.length) {
     return;
   }
 
-  const searchList = await NGA.search(q, 0, 50);
-  console.log(`<${q}>搜索到${searchList.length}条结果`);
-  if (searchList.length <= 0) {
-    await vscode.window.showInformationMessage('没有找到相关内容');
-    return;
-  }
-  _lastSearchList = searchList;
-  showQuickPick(searchList);
+  await loadSearchPage(query, 1);
 }
 
-async function showQuickPick(searchList: SearchElement[]) {
-  const items = searchList.map((s, i) => {
-    return {
-      topicId: s.id,
-      title: s.title,
-      label: `${i + 1}. ${s.title}`,
-      description: `@${s.authorName} ${s.postdate}`,
-    //   detail: s.content
+async function loadSearchPage(query: string, page: number) {
+  const previousState = lastSearchState;
+  try {
+    const fetched = await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: `正在搜索“${query}”（第 ${page} 页）`,
+      cancellable: false,
+    }, () => NGA.search(
+      query,
+      getSearchPageOffset(page, SEARCH_PAGE_SIZE),
+      SEARCH_PAGE_SIZE + 1,
+    ));
+    const currentPage = splitSearchPage(fetched, SEARCH_PAGE_SIZE);
+    console.log(`<${query}>第${page}页搜索到${currentPage.results.length}条结果`);
+
+    if (!currentPage.results.length) {
+      if (page === 1) {
+        lastSearchState = undefined;
+        await vscode.window.showInformationMessage('没有找到相关内容');
+      } else {
+        await vscode.window.showInformationMessage('没有更多搜索结果');
+        if (previousState) {
+          await showQuickPick(previousState);
+        }
+      }
+      return;
+    }
+
+    const state: SearchState = {
+      query,
+      page,
+      results: currentPage.results,
+      hasNext: currentPage.hasNext,
     };
-  });
+    lastSearchState = state;
+    await showQuickPick(state);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await vscode.window.showErrorMessage(`搜索失败：${message}`);
+    if (previousState) {
+      await showQuickPick(previousState);
+    }
+  }
+}
 
-  const select = await vscode.window.showQuickPick(items, {
+async function showQuickPick(state: SearchState) {
+  const startIndex = getSearchPageOffset(state.page, SEARCH_PAGE_SIZE);
+  const topicItems: SearchQuickPickItem[] = state.results.map((topic, index) => ({
+    action: 'topic',
+    topic,
+    label: `${startIndex + index + 1}. ${topic.title}`,
+    description: `@${topic.authorName} ${topic.postdate}`,
+  }));
+  const navigationItems: SearchQuickPickItem[] = [];
+
+  if (state.page > 1) {
+    navigationItems.push({
+      action: 'previous',
+      label: '$(arrow-left) 上一页',
+      description: `返回第 ${state.page - 1} 页`,
+      alwaysShow: true,
+    });
+  }
+  if (state.hasNext) {
+    navigationItems.push({
+      action: 'next',
+      label: '$(arrow-right) 下一页',
+      description: `查看第 ${state.page + 1} 页`,
+      alwaysShow: true,
+    });
+  }
+  const items = navigationItems.concat(topicItems);
+
+  const selected = await vscode.window.showQuickPick(items, {
     matchOnDescription: true,
-    // matchOnDetail: true,
-    placeHolder: '搜索结果'
+    placeHolder: `“${state.query}”的搜索结果 · 第 ${state.page} 页`,
   });
-
-  // 在搜索结果弹框中取消
-  if (select === undefined) {
-    // showInoutBox();
-    _lastSearchList = undefined;
+  if (!selected) {
+    lastSearchState = undefined;
     return;
   }
-  const node = new TreeNode(select.title, false);
-  node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${select.topicId}`;
+  if (selected.action === 'previous') {
+    await loadSearchPage(state.query, state.page - 1);
+    return;
+  }
+  if (selected.action === 'next') {
+    await loadSearchPage(state.query, state.page + 1);
+    return;
+  }
+  if (!selected.topic) {
+    return;
+  }
+
+  const node = new TreeNode(selected.topic.title, false);
+  node.link = `https://${Global.getNgaDomain()}/read.php?lite=js&noprefix&tid=${selected.topic.id}`;
   topicItemClick(node);
 }
