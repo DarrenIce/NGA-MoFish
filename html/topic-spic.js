@@ -117,6 +117,26 @@ document.querySelectorAll('.topic-content a[href*="/t/"]').forEach((a) => {
   };
 });
 
+// 分页跳转：读取当前组件输入框页码并夹取到合法范围
+function jumpToPage(el) {
+  const container = el.closest('.pages');
+  if (!container) {
+    return;
+  }
+  const input = container.querySelector('.page-jump-input');
+  if (!input || !input.value.trim()) {
+    return;
+  }
+  const page = parseInt(input.value, 10);
+  if (isNaN(page)) {
+    return;
+  }
+  const max = parseInt(input.max, 10) || 1;
+  const clamped = Math.min(Math.max(page, 1), max);
+  input.value = clamped;
+  vsPostMessage('pageTurning', { page: clamped });
+}
+
 // 评论
 function onSubmit() {
   const content = (document.querySelector('#replyBox').value || '').trim();

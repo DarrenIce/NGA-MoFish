@@ -107,6 +107,48 @@
 
     <hr />
 
+    <!-- 分页（顶部） -->
+    {{if !topic.onlyAuthor && topic.pages > 1}}
+    <div class="pages">
+      <% if (topic.pageNow > 1) { %>
+      <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow - 1 %>});" title="上一页">上一页</a>
+      <% } else { %>
+      <a class="pageUp is-disabled" href="javascript:;" title="上一页">上一页</a>
+      <% } %>
+      <%
+        var pageList = [];
+        if (topic.pages <= 7) {
+          for (var i = 1; i <= topic.pages; i++) pageList.push(i);
+        } else {
+          pageList.push(1);
+          var start = (topic.pageNow - 2 > 2) ? topic.pageNow - 2 : 2;
+          var end = (topic.pageNow + 2 < topic.pages - 1) ? topic.pageNow + 2 : topic.pages - 1;
+          if (start > 2) pageList.push(0);
+          for (var i = start; i <= end; i++) pageList.push(i);
+          if (end < topic.pages - 1) pageList.push(0);
+          pageList.push(topic.pages);
+        }
+      %>
+      <% for (var j = 0; j < pageList.length; j++) {
+        var p = pageList[j];
+        if (p === 0) { %>
+          <span class="page-ellipsis">…</span>
+        <% } else if (p === topic.pageNow) { %>
+          <b><%- p %></b>
+        <% } else { %>
+          <a href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%- p %>});"><%- p %></a>
+        <% } %>
+      <% } %>
+      <% if (topic.pageNow < topic.pages) { %>
+      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow + 1 %>});" title="下一页">下一页</a>
+      <% } else { %>
+      <a class="pageDown is-disabled" href="javascript:;" title="下一页">下一页</a>
+      <% } %>
+      <a class="page-refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.pageNow %>});" title="刷新当前页面">刷新</a>
+      <span class="page-jump">跳至 <input class="page-jump-input" type="number" min="1" max="<%= topic.pages %>" value="<%= topic.pageNow %>" onkeydown="if (event.key === 'Enter') jumpToPage(this);" /> 页 <button type="button" class="page-jump-btn" onclick="jumpToPage(this)">跳转</button></span>
+    </div>
+    {{/if}}
+
     <section class="reply-composer" id="replyComposer" aria-labelledby="replyComposerTitle">
       <div class="reply-composer-heading">
         <div>
@@ -247,25 +289,45 @@
       {{/each}}
     </div>
 
-    {{if !topic.onlyAuthor && topic.needTurn}}
-      {{if topic.pageNow > 1}}
-      <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow-1 %>});" title="上一页">上一页</a>
-      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow+1 %>});" title="下一页">下一页</a>
-      {{else}}
-      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow+1 %>});" title="下一页">下一页</a>
-      {{/if}}
-      <hr />
-    {{/if}}
-    
-    {{if !topic.onlyAuthor}}
+    <!-- 分页（底部） -->
+    {{if !topic.onlyAuthor && topic.pages > 1}}
     <div class="pages">
-    <% for(var i = 1; i <= topic.pages; i++){ %>
-      <% if (i == topic.pageNow) {%>
-      <b>第<%- i %>页</b>
-      <%} else {%>
-      <a href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%- i %>});"><%- i %></a>
-      <%}%>
-    <% } %>
+      <% if (topic.pageNow > 1) { %>
+      <a class="pageUp" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow - 1 %>});" title="上一页">上一页</a>
+      <% } else { %>
+      <a class="pageUp is-disabled" href="javascript:;" title="上一页">上一页</a>
+      <% } %>
+      <%
+        var pageList = [];
+        if (topic.pages <= 7) {
+          for (var i = 1; i <= topic.pages; i++) pageList.push(i);
+        } else {
+          pageList.push(1);
+          var start = (topic.pageNow - 2 > 2) ? topic.pageNow - 2 : 2;
+          var end = (topic.pageNow + 2 < topic.pages - 1) ? topic.pageNow + 2 : topic.pages - 1;
+          if (start > 2) pageList.push(0);
+          for (var i = start; i <= end; i++) pageList.push(i);
+          if (end < topic.pages - 1) pageList.push(0);
+          pageList.push(topic.pages);
+        }
+      %>
+      <% for (var j = 0; j < pageList.length; j++) {
+        var p = pageList[j];
+        if (p === 0) { %>
+          <span class="page-ellipsis">…</span>
+        <% } else if (p === topic.pageNow) { %>
+          <b><%- p %></b>
+        <% } else { %>
+          <a href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%- p %>});"><%- p %></a>
+        <% } %>
+      <% } %>
+      <% if (topic.pageNow < topic.pages) { %>
+      <a class="pageDown" href="javascript:;" onclick="vsPostMessage('pageTurning', {page: <%= topic.pageNow + 1 %>});" title="下一页">下一页</a>
+      <% } else { %>
+      <a class="pageDown is-disabled" href="javascript:;" title="下一页">下一页</a>
+      <% } %>
+      <a class="page-refresh" href="javascript:;" onclick="vsPostMessage('refresh', {page: <%= topic.pageNow %>});" title="刷新当前页面">刷新</a>
+      <span class="page-jump">跳至 <input class="page-jump-input" type="number" min="1" max="<%= topic.pages %>" value="<%= topic.pageNow %>" onkeydown="if (event.key === 'Enter') jumpToPage(this);" /> 页 <button type="button" class="page-jump-btn" onclick="jumpToPage(this)">跳转</button></span>
     </div>
     {{/if}}
 

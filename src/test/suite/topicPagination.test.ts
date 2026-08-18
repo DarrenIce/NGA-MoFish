@@ -78,3 +78,15 @@ suite('帖子页分页组件 topic.html', () => {
     assert.strictEqual((singlePage.match(/class="pages"/g) || []).length, 0);
   });
 });
+
+suite('帖子页分页组件 topic-spic.html', () => {
+  test('与 topic.html 渲染一致', () => {
+    const html = renderTemplate('topic-spic.html', buildTopic());
+    assertPaginationRendered(html);
+  });
+
+  test('只看楼主不渲染分页', () => {
+    const onlyAuthor = renderTemplate('topic-spic.html', buildTopic({ onlyAuthor: true }));
+    assert.strictEqual((onlyAuthor.match(/class="pages"/g) || []).length, 0);
+  });
+});
