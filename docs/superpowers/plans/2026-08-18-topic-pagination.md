@@ -84,7 +84,7 @@ function renderTemplate(templateName: string, topic: any): string {
 
 function assertPaginationRendered(html: string): void {
   assert.strictEqual((html.match(/class="pages"/g) || []).length, 2);
-  assert.strictEqual((html.match(/page-ellipsis/g) || []).length, 2);
+  assert.strictEqual((html.match(/page-ellipsis/g) || []).length, 4);
   assert.strictEqual((html.match(/<b>6<\/b>/g) || []).length, 2);
   assert.strictEqual((html.match(/page-refresh/g) || []).length, 2);
   assert.strictEqual((html.match(/page-jump-input/g) || []).length, 2);
