@@ -433,6 +433,56 @@ hr {
   background: var(--mofish-hover);
 }
 
+.pages .page-ellipsis {
+  padding: 2px 4px;
+  color: var(--mofish-muted);
+}
+
+.pages .is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.pages .page-refresh,
+.pages .page-jump button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 7px;
+  border: 1px solid var(--mofish-border);
+  border-radius: 2px;
+  color: var(--mofish-editor-fg);
+  background: var(--mofish-panel-bg);
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.pages .page-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mofish-muted);
+  font-size: 12px;
+}
+
+.pages .page-jump input {
+  width: 56px;
+  height: 24px;
+  padding: 2px 6px;
+  border: 1px solid var(--mofish-border);
+  border-radius: 2px;
+  box-sizing: border-box;
+  background: var(--mofish-panel-bg);
+  color: var(--mofish-editor-fg);
+  font-size: 12px;
+}
+
+.pages .page-jump input:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+
 .editor-statusbar {
   position: sticky;
   z-index: 10;
@@ -865,6 +915,14 @@ body[data-topic-theme="terminal"] .pageUp,
 body[data-topic-theme="terminal"] .pageDown,
 body[data-topic-theme="terminal"] .pages a,
 body[data-topic-theme="terminal"] .pages b {
+  border-style: dashed;
+  background: transparent;
+  font-family: var(--mofish-mono);
+}
+
+body[data-topic-theme="terminal"] .pages .page-refresh,
+body[data-topic-theme="terminal"] .pages .page-jump button,
+body[data-topic-theme="terminal"] .pages .page-jump input {
   border-style: dashed;
   background: transparent;
   font-family: var(--mofish-mono);
