@@ -22,6 +22,12 @@
     </style>
   </head>
   <body>
-    <img src="{{imageSrc}}" alt="" />
+    <img
+      id="nga-large-image"
+      src="{{imageSrc}}"
+      alt=""
+      data-vscode-context='{"webviewSection": "nga-image", "imageSrc": "{{imageSrc}}"}'
+    />
+    <script src="{{ contextPath }}/html/image-copy.js"></script>
   </body>
 </html>

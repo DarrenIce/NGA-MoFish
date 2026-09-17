@@ -154,6 +154,10 @@ export default function topicItemClick(item: TreeNode) {
       case "browseImage":
         _openLargeImage(message.src);
         break;
+      case "copyImage":
+        // webview 侧按钮触发（保留消息通道，便于后续扩展）
+        _copyImageToClipboard(panel, message.src);
+        break;
       // case 'openTopic':
       //   // label显示/t/xxx部分
       //   {
@@ -336,6 +340,25 @@ function loadTopicInPanel(
 }
 
 /**
+ * 复制帖子图片到系统剪贴板（右键菜单命令入口）
+ * 附加参数来自 webview 的 data-vscode-context（webviewSection == 'nga-image'）
+ */
+export function copyTopicImage(args: unknown) {
+  const imageSrc = _extractImageSrcFromContext(args);
+  if (!imageSrc) {
+    return;
+  }
+  const panel = Object.values(panels).find((p) => p.active)
+    || Object.values(panels).find((p) => p.visible);
+  if (!panel) {
+    vscode.window.showErrorMessage('复制图片失败：未找到帖子页面');
+    return;
+  }
+  panel.reveal();
+  _copyImageToClipboard(panel, imageSrc);
+}
+
+/**
  * 打开大图
  * @param imageSrc 图片地址
  */
@@ -351,6 +374,7 @@ function _openLargeImage(imageSrc: string) {
   panel = _createPanel(imageSrc, "查看图片");
   panel.webview.html = NGA.renderPage("browseImage.html", {
     imageSrc: imageSrc,
+    contextPath: Global.getWebViewContextPath(panel.webview),
   });
 }
 
@@ -482,4 +506,103 @@ async function collectPost(panel: vscode.WebviewPanel, topic: TopicDetail,) {
       console.log(d["data"]);
       vscode.window.showInformationMessage('收藏成功!');
     });
+}
+
+/**
+ * 图片 MIME 类型和对应的剪贴板格式
+ * 注：vscode.env.clipboard.writeBuffer 在 macOS 上写入 PNG
+ */
+const IMAGE_MIME_TYPES: { [key: string]: string } = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  bmp: "image/bmp",
+  webp: "image/webp",
+};
+
+/**
+ * 从消息的 dataVscodeContext 中提取图片地址
+ * （右键菜单通过 data-vscode-context 传入 webviewSection / imageSrc）
+ */
+function _extractImageSrcFromContext(args: unknown): string | undefined {
+  const context = args as { webviewSection?: unknown; imageSrc?: unknown } | undefined;
+  if (
+    !context ||
+    typeof context !== "object" ||
+    context.webviewSection !== "nga-image" ||
+    typeof context.imageSrc !== "string" ||
+    !context.imageSrc
+  ) {
+    return undefined;
+  }
+  return context.imageSrc;
+}
+
+/**
+ * 下载图片字节并交给webview写入系统剪贴板
+ * 外链图片在webview中受CORS限制无法fetch，因此由扩展侧下载
+ */
+async function _copyImageToClipboard(panel: vscode.WebviewPanel, imageSrc: string) {
+  try {
+    const response = await axios.get(imageSrc, {
+      responseType: "arraybuffer",
+      // 图片可能挂在别的域（如img.nga.cn），直接请求原地址
+      timeout: 30000,
+    });
+    const bytes = new Uint8Array(response.data);
+    if (!bytes || !bytes.length) {
+      throw new Error("图片内容为空");
+    }
+    // 依据魔数判断图片类型，保证剪贴板格式正确
+    const mime = _sniffImageMimeType(bytes) || _guessImageMimeFromUrl(imageSrc);
+    panel.webview.postMessage({
+      command: "writeImageToClipboard",
+      payloadBase64: Buffer.from(bytes).toString("base64"),
+      mimeType: mime,
+    });
+  } catch (error) {
+    console.error("复制图片失败：", error);
+    const detail = error instanceof Error ? error.message : String(error);
+    vscode.window.showErrorMessage(`复制图片失败：${detail}`);
+  }
+}
+
+/**
+ * 通过文件头魔数识别图片 MIME 类型
+ */
+function _sniffImageMimeType(bytes: Uint8Array): string | undefined {
+  if (bytes.length >= 8
+    && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47
+    && bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A) {
+    return IMAGE_MIME_TYPES.png;
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+    return IMAGE_MIME_TYPES.jpg;
+  }
+  if (bytes.length >= 6 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+    return IMAGE_MIME_TYPES.gif;
+  }
+  if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4D) {
+    return IMAGE_MIME_TYPES.bmp;
+  }
+  if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46
+    && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) {
+    return IMAGE_MIME_TYPES.webp;
+  }
+  return undefined;
+}
+
+/**
+ * 魔数识别失败时，从URL后缀猜测图片类型
+ */
+function _guessImageMimeFromUrl(url: string): string {
+  const match = url.split("?")[0].match(/\.([a-zA-Z0-9]+)$/);
+  if (match) {
+    const ext = match[1].toLowerCase();
+    if (IMAGE_MIME_TYPES[ext]) {
+      return IMAGE_MIME_TYPES[ext];
+    }
+  }
+  return IMAGE_MIME_TYPES.png;
 }
