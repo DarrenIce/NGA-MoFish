@@ -2,7 +2,7 @@
 	"name": "nga-mofish",
 	"displayName": "NGA-MoFish",
 	"description": "",
-	"version": "1.10.1",
+	"version": "1.11.0",
 	"publisher": "DarrenB",
 	"icon": "resources/nga.png",
 	"repository": {
@@ -10,7 +10,7 @@
 		"url": "https://github.com/DarrenIce/NGA-MoFish"
 	},
 	"engines": {
-		"vscode": "^1.53.0"
+		"vscode": "^1.56.0"
 	},
 	"categories": [
 		"Other"
@@ -114,6 +114,14 @@
 				"command": "nga-custom.jumpFirst",
 				"title": "返回首页",
 				"icon": "$(debug-step-back)"
+			},
+			{
+				"command": "nga.topicItemClick",
+				"title": "浏览帖子"
+			},
+			{
+				"command": "nga.copyTopicImage",
+				"title": "复制图片"
 			}
 		],
 		"viewsContainers": {
@@ -220,6 +228,13 @@
 				{
 					"command": "nga.setRead",
 					"when": "viewItem == item"
+				}
+			],
+			"webview/context": [
+				{
+					"command": "nga.copyTopicImage",
+					"when": "webviewSection == nga-image",
+					"group": "navigation"
 				}
 			]
 		}

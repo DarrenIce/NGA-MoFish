@@ -19,6 +19,7 @@
 - [x] 打开指定tid
 - [x] 只看楼主（感谢呦哥@Exceedingly0） 
 - [x] 无图模式、小图模式、标准模式（无图模式下点击占位可加载图片）
+- [x] 帖子图片右键复制到系统剪贴板（保留 GIF 动图）
 - [x] Markdown 编辑器、TypeScript 源码、PowerShell 终端三套 VS Code 风格帖子主题
 - [x] 基于公开历史回帖生成用户画像，支持自定义 OpenAI-compatible 模型
 - [x] 帖子搜索，支持搜索结果翻页

@@ -16,6 +16,7 @@ import { parse } from 'path';
 import { User } from './models/user';
 import CollectProvider from './providers/CollectProvider';
 import setting from './commands/setting';
+import { copyTopicImage } from './commands/topicItemClick';
 
 let pageNoticeBar: vscode.StatusBarItem;
 
@@ -72,6 +73,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 公共事件：点击浏览帖子
 	let cDisposable5 = vscode.commands.registerCommand('nga.topicItemClick', (item: TreeNode) => topicItemClick(item));
+
+	// 帖子页面：右键复制图片（由 webview/context 菜单触发，参数来自 data-vscode-context）
+	let cDisposable19 = vscode.commands.registerCommand('nga.copyTopicImage', (args: unknown) => copyTopicImage(args));
 
 	let cDisposable6 = vscode.commands.registerCommand('nga.open', async () => {
 		let tid = await vscode.window.showInputBox({
@@ -176,6 +180,7 @@ export function activate(context: vscode.ExtensionContext) {
 		cDisposable16,
 		cDisposable17,
 		cDisposable18,
+		cDisposable19,
 	);
 
 	Global.initNodePage();
