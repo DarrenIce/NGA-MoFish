@@ -1,11 +1,44 @@
+# ---------- 项目自身 ----------
 .vscode/**
 .vscode-test/**
 out/test/**
 src/**
+docs/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
 **/tsconfig.json
-**/.eslintrc.json
+**/.eslintrc*
 **/*.map
 **/*.ts
+
+# ---------- 依赖目录中的非运行时文件 ----------
+# 发布包瘦身：这些文件运行时用不到，但会被打进 VSIX，
+# 使包从 1500+ 个文件膨胀到 4MB+，增加发布校验失败的概率。
+node_modules/**/.npmignore
+node_modules/**/.eslintrc*
+node_modules/**/.eslintignore
+node_modules/**/.jshintrc
+node_modules/**/.nycrc
+node_modules/**/.editorconfig
+node_modules/**/.travis.yml
+node_modules/**/.dir-locals.el
+node_modules/**/.tm_properties
+node_modules/**/.idea/**
+node_modules/**/.env
+node_modules/**/*.md
+node_modules/**/*.markdown
+node_modules/**/*.bak
+node_modules/**/*.patch
+node_modules/**/*.coffee
+node_modules/**/*.yml
+node_modules/**/Makefile
+node_modules/**/Jenkinsfile
+node_modules/**/yarn.lock
+node_modules/**/package-lock.json
+node_modules/**/man/**
+node_modules/**/bin/**
+node_modules/**/test/**
+node_modules/**/tests/**
+node_modules/**/*.debug.js
+node_modules/**/sample-cli-config-file.conf
